@@ -1,4 +1,22 @@
-export function createEventCard(event) {
+function timeAgo(dateString) {
+  if (!dateString) return "Just now";
+  const date = new Date(dateString);
+  const seconds = Math.floor((new Date() - date) / 1000);
+
+  let interval = seconds / 31536000;
+  if (interval > 1) return Math.floor(interval) + " years ago";
+  interval = seconds / 2592000;
+  if (interval > 1) return Math.floor(interval) + " months ago";
+  interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + " days ago";
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + " hours ago";
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + " minutes ago";
+  return Math.floor(seconds) + " seconds ago";
+}
+
+export function createEventCard(event, index = 0) {
   // Determine badge color based on workflow name or status if available
   let badgeClass = "badge-success";
   if (
@@ -13,14 +31,15 @@ export function createEventCard(event) {
     badgeClass = "badge-warning";
   }
 
-  // Format timestamp (just a simple local string for now)
-  const timestamp = event.timestamp
-    ? new Date(event.timestamp).toLocaleString()
-    : "Just now";
+  // Format timestamp relative to now
+  const timestamp = timeAgo(event.timestamp);
+
+  // Calculate staggered animation delay
+  const animationDelay = Math.min(index * 0.05, 0.5);
 
   // Build the raw HTML string
   const html = `
-    <div class="card flex justify-between items-center" id="event-${event.id}">
+    <div class="card flex justify-between items-center animate-slide-up" style="animation-delay: ${animationDelay}s" id="event-${event.id}">
       <div class="flex flex-col gap-sm">
         <div class="flex items-center gap-md">
           <span class="text-base font-semibold">${event.repository}</span>
@@ -52,8 +71,8 @@ export function renderEvents(container, events) {
     return;
   }
 
-  events.forEach((event) => {
-    const cardNode = createEventCard(event);
+  events.forEach((event, index) => {
+    const cardNode = createEventCard(event, index);
     container.appendChild(cardNode);
   });
 }
