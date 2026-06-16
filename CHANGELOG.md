@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.2.0...lens-frontend-v0.3.0) (2026-06-16)
+
+
+### Features
+
+* dockerize the frontend with nginx proxy ([#8](https://github.com/nickdchristian/lens-frontend/issues/8)) ([d164711](https://github.com/nickdchristian/lens-frontend/commit/d1647119a4031f66805e770125cc11de8830aa9e))
+
 ## [0.2.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.1.0...lens-frontend-v0.2.0) (2026-06-16)
 
 
