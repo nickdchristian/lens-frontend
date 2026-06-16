@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.4.0...lens-frontend-v0.5.0) (2026-06-16)
+
+
+### Features
+
+* add accessibility, MSW local mock api, and reactive state management  ([#13](https://github.com/nickdchristian/lens-frontend/issues/13)) ([9eb600e](https://github.com/nickdchristian/lens-frontend/commit/9eb600ec4bde65c96222053d583534b3a57201b3))
+
 ## [0.4.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.3.0...lens-frontend-v0.4.0) (2026-06-16)
 
 ### Features
