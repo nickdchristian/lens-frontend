@@ -3,8 +3,6 @@ import { state } from "./state.js?v=100";
 import { applyTheme, getAccentColor } from "./theme.js?v=100";
 import { renderOverview } from "./charts.js?v=101";
 
-
-
 const escapeHtml = (unsafe) =>
   String(unsafe ?? "").replace(
     /[&<"'>]/g,
@@ -212,7 +210,6 @@ export function initTabs() {
 
   if (logoBtn) {
     logoBtn.addEventListener("click", () => {
-
       state.currentRepo = null;
       state.currentGroupVal = null;
       state.currentArtifact = null;

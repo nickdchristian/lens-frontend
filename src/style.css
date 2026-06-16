@@ -220,8 +220,6 @@ body {
   background-color: color-mix(in srgb, var(--theme-primary) 15%, transparent);
 }
 
-
-
 /* SIDEBAR */
 .sidebar {
   width: var(--sidebar-width);

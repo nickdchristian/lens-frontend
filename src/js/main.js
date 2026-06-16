@@ -33,5 +33,4 @@ export async function init() {
   loadDashboard();
 }
 
-
 document.addEventListener("DOMContentLoaded", init);
