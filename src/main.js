@@ -1,60 +1,36 @@
-import "./style.css";
-import javascriptLogo from "./assets/javascript.svg";
-import viteLogo from "./assets/vite.svg";
-import heroImg from "./assets/hero.png";
-import { setupCounter } from "./counter.js";
+import "./styles/main.css";
+import { api } from "./api/client.js";
+import { renderEvents, renderError, renderLoading } from "./ui/render.js";
 
-document.querySelector("#app").innerHTML = `
-<section id="center">
-  <div class="hero">
-    <img src="${heroImg}" class="base" width="170" height="179">
-    <img src="${javascriptLogo}" class="framework" alt="JavaScript logo"/>
-    <img src="${viteLogo}" class="vite" alt="Vite logo" />
-  </div>
-  <div>
-    <h1>Get started</h1>
-    <p>Edit <code>src/main.js</code> and save to test <code>HMR</code></p>
-  </div>
-  <button id="counter" type="button" class="counter"></button>
-</section>
+const REPOSITORY_NAME = "lens"; // Hardcoded for now, could be dynamic later
+const eventContainer = document.getElementById("event-container");
+const connectionStatus = document.getElementById("connection-status");
 
-<div class="ticks"></div>
+async function init() {
+  // Check health status
+  const isHealthy = await api.checkHealth();
+  if (isHealthy) {
+    connectionStatus.textContent = "Connected";
+    connectionStatus.style.color = "var(--status-success)";
+  } else {
+    connectionStatus.textContent = "Offline";
+    connectionStatus.style.color = "var(--status-error)";
+  }
 
-<section id="next-steps">
-  <div id="docs">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#documentation-icon"></use></svg>
-    <h2>Documentation</h2>
-    <p>Your questions, answered</p>
-    <ul>
-      <li>
-        <a href="https://vite.dev/" target="_blank">
-          <img class="logo" src="${viteLogo}" alt="" />
-          Explore Vite
-        </a>
-      </li>
-      <li>
-        <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-          <img class="button-icon" src="${javascriptLogo}" alt="">
-          Learn more
-        </a>
-      </li>
-    </ul>
-  </div>
-  <div id="social">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#social-icon"></use></svg>
-    <h2>Connect with us</h2>
-    <p>Join the Vite community</p>
-    <ul>
-      <li><a href="https://github.com/vitejs/vite" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#github-icon"></use></svg>GitHub</a></li>
-      <li><a href="https://chat.vite.dev/" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#discord-icon"></use></svg>Discord</a></li>
-      <li><a href="https://x.com/vite_js" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#x-icon"></use></svg>X.com</a></li>
-      <li><a href="https://bsky.app/profile/vite.dev" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#bluesky-icon"></use></svg>Bluesky</a></li>
-    </ul>
-  </div>
-</section>
+  // Load events
+  renderLoading(eventContainer);
+  try {
+    const response = await api.getEvents(REPOSITORY_NAME);
+    // The backend EventListResponse returns { status: "success", events: [...] }
+    if (response && response.events) {
+      renderEvents(eventContainer, response.events);
+    } else {
+      renderEvents(eventContainer, []);
+    }
+  } catch (error) {
+    renderError(eventContainer, error.message);
+  }
+}
 
-<div class="ticks"></div>
-<section id="spacer"></section>
-`;
-
-setupCounter(document.querySelector("#counter"));
+// Start the application
+init();
