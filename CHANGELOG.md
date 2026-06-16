@@ -2,10 +2,9 @@
 
 ## [0.4.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.3.0...lens-frontend-v0.4.0) (2026-06-16)
 
-
 ### Features
 
-* trigger release for UI modernization ([0460190](https://github.com/nickdchristian/lens-frontend/commit/0460190b1fdcecb603eb41090eb459e86877a787))
+- trigger release for UI modernization ([0460190](https://github.com/nickdchristian/lens-frontend/commit/0460190b1fdcecb603eb41090eb459e86877a787))
 
 ## [0.3.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.2.0...lens-frontend-v0.3.0) (2026-06-16)
 

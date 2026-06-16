@@ -1,5 +1,5 @@
 import { html, render } from "lit";
-import { state } from "../state/store.js";
+import { state, subscribe } from "../state/store.js";
 import { applyTheme, getAccentColor } from "./theme.js";
 import { renderOverview } from "./charts.js";
 import {
@@ -26,6 +26,11 @@ export function initDOM() {
   DOM.traceDetails = document.getElementById("trace-details-panel");
   DOM.panelTitle = document.getElementById("panel-title");
   DOM.panelBody = document.getElementById("panel-body");
+
+  subscribe(() => {
+    renderSidebar();
+    renderDashboard();
+  });
 }
 
 export function renderArtifactTrace(versionQuery) {
@@ -190,9 +195,6 @@ export function initTabs() {
         '.tab-btn[data-tab="overview"]'
       );
       if (overviewBtn) overviewBtn.click();
-
-      renderSidebar();
-      renderDashboard();
     });
   }
 
@@ -215,9 +217,6 @@ export function initTabs() {
         '.tab-btn[data-tab="overview"]'
       );
       if (overviewBtn) overviewBtn.click();
-
-      renderSidebar();
-      renderDashboard();
     });
   });
 }
@@ -246,25 +245,34 @@ export function initControls() {
         e.target.classList.add("active");
         dropdownLabel.textContent = e.target.textContent;
         dropdownContainer.classList.remove("open");
+        dropdownTrigger.setAttribute("aria-expanded", "false");
 
         state.currentGroupKey = val === "none" ? null : val;
         state.currentGroupVal = null;
         state.currentRepo = null;
         state.currentArtifact = null;
-        renderSidebar();
-        renderDashboard();
       }
     };
 
     const template = html`
-      <button class="dropdown-item active" data-value="none">
+      <button
+        class="dropdown-item active"
+        data-value="none"
+        role="option"
+        aria-selected=${state.currentGroupKey === null ? "true" : "false"}
+      >
         Group By: None
       </button>
       ${Array.from(tagKeys)
         .sort()
         .map(
           (key) => html`
-            <button class="dropdown-item" data-value="${key}">
+            <button
+              class="dropdown-item"
+              data-value="${key}"
+              role="option"
+              aria-selected=${state.currentGroupKey === key ? "true" : "false"}
+            >
               Group By: ${key.charAt(0).toUpperCase() + key.slice(1)}
             </button>
           `
@@ -277,13 +285,25 @@ export function initControls() {
 
     dropdownTrigger.addEventListener("click", (e) => {
       e.stopPropagation();
-      dropdownContainer.classList.toggle("open");
+      const isOpen = dropdownContainer.classList.toggle("open");
+      dropdownTrigger.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+
+    dropdownTrigger.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        dropdownTrigger.click();
+      } else if (e.key === "Escape") {
+        dropdownContainer.classList.remove("open");
+        dropdownTrigger.setAttribute("aria-expanded", "false");
+      }
     });
 
     // Close on click outside
     document.addEventListener("click", (e) => {
       if (!dropdownContainer.contains(e.target)) {
         dropdownContainer.classList.remove("open");
+        dropdownTrigger.setAttribute("aria-expanded", "false");
       }
     });
   }
@@ -293,7 +313,6 @@ export function initControls() {
       "input",
       debounce(() => {
         state.searchQuery = DOM.searchInput.value.toLowerCase();
-        renderSidebar();
       }, 100)
     );
   }
@@ -399,8 +418,6 @@ export function renderSidebar() {
               state.currentRepo = repo;
               state.currentGroupVal = null;
               state.currentArtifact = null;
-              renderSidebar();
-              renderDashboard();
             };
             return html`
               <li>
@@ -437,8 +454,6 @@ export function renderSidebar() {
             const onGroupClick = () => {
               state.currentGroupVal = gVal;
               state.currentRepo = null;
-              renderSidebar();
-              renderDashboard();
             };
 
             return html`
@@ -459,8 +474,6 @@ export function renderSidebar() {
                         state.currentRepo = repo;
                         state.currentGroupVal = gVal;
                         state.currentArtifact = null;
-                        renderSidebar();
-                        renderDashboard();
                       };
                       return html`
                         <li>
@@ -500,8 +513,6 @@ export function renderSidebar() {
             state.currentArtifact = art;
             state.currentRepo = null;
             state.currentGroupVal = null;
-            renderSidebar();
-            renderDashboard();
           };
           return html`
             <li>
