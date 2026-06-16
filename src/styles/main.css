@@ -156,4 +156,35 @@ a:hover {
   flex-direction: column;
   gap: var(--spacing-md);
   margin-top: var(--spacing-xl);
+  padding-bottom: var(--spacing-xl); /* Mobile breathing room */
+}
+
+/* Micro Animations */
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0; /* Ensures it stays hidden before animation starts */
+}
+
+/* Mobile Responsiveness Polish */
+@media (max-width: 640px) {
+  .card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card > div:last-child {
+    margin-top: var(--spacing-sm);
+    font-size: 0.75rem;
+  }
 }
