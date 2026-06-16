@@ -3,7 +3,11 @@ import { logger } from "./utils/logger.js";
 
 // Global error boundaries
 window.addEventListener("error", (event) => {
-  logger.error("Uncaught exception", { message: event.message, filename: event.filename, lineno: event.lineno });
+  logger.error("Uncaught exception", {
+    message: event.message,
+    filename: event.filename,
+    lineno: event.lineno,
+  });
 });
 
 window.addEventListener("unhandledrejection", (event) => {

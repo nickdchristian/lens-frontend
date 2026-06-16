@@ -17,7 +17,7 @@ function log(level, message, context = {}) {
 
   const entry = {
     timestamp: new Date().toISOString(),
-    level: Object.keys(LogLevel).find(k => LogLevel[k] === level),
+    level: Object.keys(LogLevel).find((k) => LogLevel[k] === level),
     message,
     ...context,
   };
