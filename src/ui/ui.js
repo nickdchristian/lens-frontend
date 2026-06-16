@@ -1,28 +1,13 @@
-import { state } from "./state.js?v=100";
-
-import { applyTheme, getAccentColor } from "./theme.js?v=100";
-import { renderOverview } from "./charts.js?v=101";
-
-const escapeHtml = (unsafe) =>
-  String(unsafe ?? "").replace(
-    /[&<"'>]/g,
-    (m) =>
-      ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;",
-      })[m]
-  );
-
-const debounce = (func, wait) => {
-  let timeout;
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(args), wait);
-  };
-};
+import { html, render } from "lit";
+import { state } from "../state/store.js";
+import { applyTheme, getAccentColor } from "./theme.js";
+import { renderOverview } from "./charts.js";
+import {
+  escapeHtml,
+  debounce,
+  formatDictionary,
+  formatDictionaryRow,
+} from "../utils/formatters.js";
 
 const DOM = {};
 export function initDOM() {
@@ -128,19 +113,6 @@ const getEmptyPanelHtml = () => `
         <p style="margin: 0; font-size: 0.95rem;">Select an artifact node above to view its trace details.</p>
     </div>
 `;
-
-const formatDictionary = (data) => {
-  if (!data || Object.keys(data).length === 0)
-    return '<div class="empty-state" style="font-size: 0.85rem; color: var(--text-secondary);">None</div>';
-  return `<div style="display: grid; grid-template-columns: max-content 1fr; gap: 0.5rem 1rem; margin-top: 0.75rem;">${Object.entries(
-    data
-  )
-    .map(([k, v]) => {
-      const displayVal = typeof v === "object" ? JSON.stringify(v) : v;
-      return `<div style="color: var(--text-secondary); font-size: 0.85rem;">${escapeHtml(k.replace(/_/g, " "))}</div><div style="font-family: monospace; font-size: 0.85rem; word-break: break-all; color: var(--text-primary);">${escapeHtml(displayVal)}</div>`;
-    })
-    .join("")}</div>`;
-};
 
 window.selectTraceNode = function (index) {
   if (!window.currentTraceEvents || !window.currentTraceEvents[index]) return;
@@ -264,30 +236,7 @@ export function initControls() {
   const dropdownContainer = document.getElementById("group-dropdown");
 
   if (dropdownContainer) {
-    dropdownMenu.innerHTML = "";
-
-    const noneBtn = document.createElement("button");
-    noneBtn.className = "dropdown-item active";
-    noneBtn.dataset.value = "none";
-    noneBtn.textContent = "Group By: None";
-    dropdownMenu.appendChild(noneBtn);
-
-    Array.from(tagKeys)
-      .sort()
-      .forEach((key) => {
-        const opt = document.createElement("button");
-        opt.className = "dropdown-item";
-        opt.dataset.value = key;
-        opt.textContent = `Group By: ${key.charAt(0).toUpperCase() + key.slice(1)}`;
-        dropdownMenu.appendChild(opt);
-      });
-
-    dropdownTrigger.addEventListener("click", (e) => {
-      e.stopPropagation();
-      dropdownContainer.classList.toggle("open");
-    });
-
-    dropdownMenu.addEventListener("click", (e) => {
+    const onDropdownClick = (e) => {
       if (e.target.classList.contains("dropdown-item")) {
         const val = e.target.dataset.value;
 
@@ -305,6 +254,30 @@ export function initControls() {
         renderSidebar();
         renderDashboard();
       }
+    };
+
+    const template = html`
+      <button class="dropdown-item active" data-value="none">
+        Group By: None
+      </button>
+      ${Array.from(tagKeys)
+        .sort()
+        .map(
+          (key) => html`
+            <button class="dropdown-item" data-value="${key}">
+              Group By: ${key.charAt(0).toUpperCase() + key.slice(1)}
+            </button>
+          `
+        )}
+    `;
+
+    render(template, dropdownMenu);
+
+    dropdownMenu.addEventListener("click", onDropdownClick);
+
+    dropdownTrigger.addEventListener("click", (e) => {
+      e.stopPropagation();
+      dropdownContainer.classList.toggle("open");
     });
 
     // Close on click outside
@@ -400,9 +373,10 @@ export function renderSidebar() {
   const groupControl = document.getElementById("sidebar-group-control");
   if (!sidebarList) return;
 
-  sidebarList.innerHTML = "";
   const filteredEvents = getFilteredEventsForSidebar();
   let firstItemSet = false;
+
+  let template;
 
   if (state.appMode === "repositories") {
     if (groupControl) groupControl.style.display = "block";
@@ -411,31 +385,35 @@ export function renderSidebar() {
       const repos = new Set();
       filteredEvents.forEach((e) => repos.add(e.repository));
 
-      Array.from(repos)
-        .sort()
-        .forEach((repo) => {
-          const li = document.createElement("li");
-          const btn = document.createElement("button");
-          btn.className = "nav-item";
-
-          if (!state.currentRepo && !state.currentGroupVal && !firstItemSet) {
-            state.currentRepo = repo;
-            firstItemSet = true;
-          }
-          if (state.currentRepo === repo) btn.classList.add("active");
-
-          btn.textContent = repo.split("/").pop() || repo;
-
-          btn.addEventListener("click", () => {
-            state.currentRepo = repo;
-            state.currentGroupVal = null;
-            state.currentArtifact = null;
-            renderSidebar();
-            renderDashboard();
-          });
-          li.appendChild(btn);
-          sidebarList.appendChild(li);
-        });
+      template = html`
+        ${Array.from(repos)
+          .sort()
+          .map((repo) => {
+            if (!state.currentRepo && !state.currentGroupVal && !firstItemSet) {
+              state.currentRepo = repo;
+              firstItemSet = true;
+            }
+            const isActive = state.currentRepo === repo;
+            const label = repo.split("/").pop() || repo;
+            const onClick = () => {
+              state.currentRepo = repo;
+              state.currentGroupVal = null;
+              state.currentArtifact = null;
+              renderSidebar();
+              renderDashboard();
+            };
+            return html`
+              <li>
+                <button
+                  class="nav-item ${isActive ? "active" : ""}"
+                  @click=${onClick}
+                >
+                  ${label}
+                </button>
+              </li>
+            `;
+          })}
+      `;
     } else {
       const groups = {};
       filteredEvents.forEach((e) => {
@@ -446,57 +424,60 @@ export function renderSidebar() {
         }
       });
 
-      Object.keys(groups)
-        .sort()
-        .forEach((gVal) => {
-          const groupLi = document.createElement("li");
+      template = html`
+        ${Object.keys(groups)
+          .sort()
+          .map((gVal) => {
+            if (!state.currentRepo && !state.currentGroupVal && !firstItemSet) {
+              state.currentGroupVal = gVal;
+              firstItemSet = true;
+            }
+            const isGroupActive =
+              state.currentGroupVal === gVal && !state.currentRepo;
+            const onGroupClick = () => {
+              state.currentGroupVal = gVal;
+              state.currentRepo = null;
+              renderSidebar();
+              renderDashboard();
+            };
 
-          const groupBtn = document.createElement("button");
-          groupBtn.className = "group-header";
-          if (state.currentGroupVal === gVal && !state.currentRepo)
-            groupBtn.classList.add("active");
-          groupBtn.textContent = String(gVal).toUpperCase();
-
-          if (!state.currentRepo && !state.currentGroupVal && !firstItemSet) {
-            state.currentGroupVal = gVal;
-            groupBtn.classList.add("active");
-            firstItemSet = true;
-          }
-
-          groupBtn.addEventListener("click", () => {
-            state.currentGroupVal = gVal;
-            state.currentRepo = null;
-            renderSidebar();
-            renderDashboard();
-          });
-          groupLi.appendChild(groupBtn);
-
-          const nestedUl = document.createElement("ul");
-          nestedUl.className = "nested-list";
-          Array.from(groups[gVal])
-            .sort()
-            .forEach((repo) => {
-              const rLi = document.createElement("li");
-              const rBtn = document.createElement("button");
-              rBtn.className = "nav-item";
-              if (state.currentRepo === repo) rBtn.classList.add("active");
-              rBtn.textContent = repo.split("/").pop() || repo;
-
-              rBtn.addEventListener("click", () => {
-                state.currentRepo = repo;
-                state.currentGroupVal = gVal;
-                state.currentArtifact = null;
-                renderSidebar();
-                renderDashboard();
-              });
-
-              rLi.appendChild(rBtn);
-              nestedUl.appendChild(rLi);
-            });
-
-          groupLi.appendChild(nestedUl);
-          sidebarList.appendChild(groupLi);
-        });
+            return html`
+              <li>
+                <button
+                  class="group-header ${isGroupActive ? "active" : ""}"
+                  @click=${onGroupClick}
+                >
+                  ${String(gVal).toUpperCase()}
+                </button>
+                <ul class="nested-list">
+                  ${Array.from(groups[gVal])
+                    .sort()
+                    .map((repo) => {
+                      const isActive = state.currentRepo === repo;
+                      const label = repo.split("/").pop() || repo;
+                      const onRepoClick = () => {
+                        state.currentRepo = repo;
+                        state.currentGroupVal = gVal;
+                        state.currentArtifact = null;
+                        renderSidebar();
+                        renderDashboard();
+                      };
+                      return html`
+                        <li>
+                          <button
+                            class="nav-item ${isActive ? "active" : ""}"
+                            @click=${onRepoClick}
+                          >
+                            ${label}
+                          </button>
+                        </li>
+                      `;
+                    })}
+                </ul>
+              </li>
+            `;
+          })}
+      `;
     }
   } else if (state.appMode === "artifacts") {
     if (groupControl) groupControl.style.display = "none";
@@ -506,32 +487,37 @@ export function renderSidebar() {
       if (e.artifact_version) artifacts.add(e.artifact_version);
     });
 
-    Array.from(artifacts)
-      .sort()
-      .forEach((art) => {
-        const li = document.createElement("li");
-        const btn = document.createElement("button");
-        btn.className = "nav-item";
-
-        if (!state.currentArtifact && !firstItemSet) {
-          state.currentArtifact = art;
-          firstItemSet = true;
-        }
-        if (state.currentArtifact === art) btn.classList.add("active");
-
-        btn.textContent = art;
-
-        btn.addEventListener("click", () => {
-          state.currentArtifact = art;
-          state.currentRepo = null;
-          state.currentGroupVal = null;
-          renderSidebar();
-          renderDashboard();
-        });
-        li.appendChild(btn);
-        sidebarList.appendChild(li);
-      });
+    template = html`
+      ${Array.from(artifacts)
+        .sort()
+        .map((art) => {
+          if (!state.currentArtifact && !firstItemSet) {
+            state.currentArtifact = art;
+            firstItemSet = true;
+          }
+          const isActive = state.currentArtifact === art;
+          const onClick = () => {
+            state.currentArtifact = art;
+            state.currentRepo = null;
+            state.currentGroupVal = null;
+            renderSidebar();
+            renderDashboard();
+          };
+          return html`
+            <li>
+              <button
+                class="nav-item ${isActive ? "active" : ""}"
+                @click=${onClick}
+              >
+                ${art}
+              </button>
+            </li>
+          `;
+        })}
+    `;
   }
+
+  render(template, sidebarList);
 }
 
 export function renderDashboard() {
@@ -586,98 +572,74 @@ export function renderDataGrid(events) {
   const thead = document.getElementById("data-table-head");
   const tbody = document.getElementById("data-table-body");
 
-  thead.innerHTML = "";
-  tbody.innerHTML = "";
-  if (events.length === 0) return;
+  if (events.length === 0) {
+    render(html``, thead);
+    render(html``, tbody);
+    return;
+  }
 
   const columns = ["id", "repository", "commit_sha"];
 
-  const trHead = document.createElement("tr");
+  const headTemplate = html`
+    <tr>
+      <th style="width: 30px;"></th>
+      ${columns.map((col) => html`<th>${col.replace(/_/g, " ")}</th>`)}
+    </tr>
+  `;
+  render(headTemplate, thead);
 
-  const thToggle = document.createElement("th");
-  thToggle.style.width = "30px";
-  trHead.appendChild(thToggle);
+  const toggleRow = (e) => {
+    const tr = e.currentTarget;
+    const detailsTr = tr.nextElementSibling;
+    const isExpanded = detailsTr.style.display === "table-row";
+    detailsTr.style.display = isExpanded ? "none" : "table-row";
+    tr.classList.toggle("expanded", !isExpanded);
+    const chevron = tr.querySelector(".chevron");
+    if (chevron) chevron.classList.toggle("expanded", !isExpanded);
+  };
 
-  columns.forEach((col) => {
-    const th = document.createElement("th");
-    th.textContent = col.replace(/_/g, " ");
-    trHead.appendChild(th);
-  });
-
-  thead.appendChild(trHead);
-
-  events
-    .slice(-100)
-    .reverse()
-    .forEach((event) => {
-      const tr = document.createElement("tr");
-      tr.className = "grid-row-master";
-
-      const tdToggle = document.createElement("td");
-      tdToggle.innerHTML = `<span class="chevron">&#9654;</span>`;
-      tdToggle.className = "toggle-cell";
-      tr.appendChild(tdToggle);
-
-      columns.forEach((col) => {
-        const td = document.createElement("td");
-        let val = event[col];
-        if (val === undefined || val === null) val = "-";
-        if (col === "commit_sha" && typeof val === "string" && val.length > 7)
-          val = val.substring(0, 7);
-        td.textContent = val;
-        tr.appendChild(td);
-      });
-
-      tbody.appendChild(tr);
-
-      const formatDictionaryRow = (data) => {
-        if (!data || Object.keys(data).length === 0)
-          return '<span class="empty-state">None</span>';
-        return `<dl class="data-list">${Object.entries(data)
-          .map(([k, v]) => {
-            const displayVal = typeof v === "object" ? JSON.stringify(v) : v;
-            return `<div class="data-row"><dt>${escapeHtml(k.replace(/_/g, " "))}</dt><dd>${escapeHtml(displayVal)}</dd></div>`;
-          })
-          .join("")}</dl>`;
-      };
-
-      const detailsTr = document.createElement("tr");
-      detailsTr.className = "grid-row-details";
-      detailsTr.style.display = "none";
-
-      const detailsTd = document.createElement("td");
-      detailsTd.colSpan = columns.length + 1;
-
-      detailsTd.innerHTML = `
-            <div class="details-pane">
+  const bodyTemplate = html`
+    ${events
+      .slice(-100)
+      .reverse()
+      .map((event) => {
+        return html`
+          <tr class="grid-row-master" @click=${toggleRow}>
+            <td class="toggle-cell"><span class="chevron">&#9654;</span></td>
+            ${columns.map((col) => {
+              let val = event[col] ?? "-";
+              if (
+                col === "commit_sha" &&
+                typeof val === "string" &&
+                val.length > 7
+              ) {
+                val = val.substring(0, 7);
+              }
+              return html`<td>${val}</td>`;
+            })}
+          </tr>
+          <tr class="grid-row-details" style="display: none;">
+            <td colspan="${columns.length + 1}">
+              <div class="details-pane">
                 <div class="details-content">
-                    <div class="details-section">
-                        <h4>Tags</h4>
-                        ${formatDictionaryRow(event.tags)}
-                    </div>
-                    <div class="details-section">
-                        <h4>Custom Data</h4>
-                        ${formatDictionaryRow(event.custom_data)}
-                    </div>
-                    <div class="details-section">
-                        <h4>Metrics</h4>
-                        ${formatDictionaryRow(event.metrics)}
-                    </div>
+                  <div class="details-section">
+                    <h4>Tags</h4>
+                    ${formatDictionaryRow(event.tags)}
+                  </div>
+                  <div class="details-section">
+                    <h4>Custom Data</h4>
+                    ${formatDictionaryRow(event.custom_data)}
+                  </div>
+                  <div class="details-section">
+                    <h4>Metrics</h4>
+                    ${formatDictionaryRow(event.metrics)}
+                  </div>
                 </div>
-
-            </div>
+              </div>
+            </td>
+          </tr>
         `;
-
-      detailsTr.appendChild(detailsTd);
-      tbody.appendChild(detailsTr);
-
-      tr.addEventListener("click", () => {
-        const isExpanded = detailsTr.style.display === "table-row";
-        detailsTr.style.display = isExpanded ? "none" : "table-row";
-        tr.classList.toggle("expanded", !isExpanded);
-        tdToggle
-          .querySelector(".chevron")
-          .classList.toggle("expanded", !isExpanded);
-      });
-    });
+      })}
+  `;
+  render(bodyTemplate, tbody);
 }

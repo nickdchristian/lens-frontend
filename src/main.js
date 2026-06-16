@@ -1,36 +1,50 @@
-import "./styles/main.css";
-import { api } from "./api/client.js";
-import { renderEvents, renderError, renderLoading } from "./ui/render.js";
+import { state } from "./state/store.js";
+import { logger } from "./utils/logger.js";
 
-const REPOSITORY_NAME = "lens"; // Hardcoded for now, could be dynamic later
-const eventContainer = document.getElementById("event-container");
-const connectionStatus = document.getElementById("connection-status");
+// Global error boundaries
+window.addEventListener("error", (event) => {
+  logger.error("Uncaught exception", {
+    message: event.message,
+    filename: event.filename,
+    lineno: event.lineno,
+  });
+});
 
-async function init() {
-  // Check health status
-  const isHealthy = await api.checkHealth();
-  if (isHealthy) {
-    connectionStatus.textContent = "Connected";
-    connectionStatus.style.color = "var(--status-success)";
-  } else {
-    connectionStatus.textContent = "Offline";
-    connectionStatus.style.color = "var(--status-error)";
-  }
+window.addEventListener("unhandledrejection", (event) => {
+  logger.error("Unhandled promise rejection", { reason: event.reason });
+});
+import { fetchEvents } from "./api/client.js";
+import { applyTheme } from "./ui/theme.js";
+import {
+  initDOM,
+  initTabs,
+  initControls,
+  renderSidebar,
+  renderDashboard,
+} from "./ui/ui.js";
 
-  // Load events
-  renderLoading(eventContainer);
-  try {
-    const response = await api.getEvents(REPOSITORY_NAME);
-    // The backend EventListResponse returns { status: "success", events: [...] }
-    if (response && response.events) {
-      renderEvents(eventContainer, response.events);
-    } else {
-      renderEvents(eventContainer, []);
+export async function init() {
+  initDOM();
+  applyTheme(state.isDarkMode);
+  initTabs();
+
+  async function loadDashboard() {
+    try {
+      const data = await fetchEvents("lens");
+      if (data.status === "success") {
+        state.allEvents = data.events;
+        initControls();
+        renderSidebar();
+        renderDashboard();
+      } else {
+        throw new Error("Invalid Response");
+      }
+    } catch (error) {
+      logger.error("Error fetching data", { error: error.message });
     }
-  } catch (error) {
-    renderError(eventContainer, error.message);
   }
+
+  loadDashboard();
 }
 
-// Start the application
-init();
+document.addEventListener("DOMContentLoaded", init);
