@@ -18,5 +18,8 @@
     "globals": "^17.6.0",
     "prettier": "^3.8.4",
     "vite": "^8.0.12"
+  },
+  "dependencies": {
+    "chart.js": "^4.5.1"
   }
 }
