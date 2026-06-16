@@ -195,7 +195,6 @@ export function initTabs() {
         '.tab-btn[data-tab="overview"]'
       );
       if (overviewBtn) overviewBtn.click();
-
     });
   }
 
@@ -218,7 +217,6 @@ export function initTabs() {
         '.tab-btn[data-tab="overview"]'
       );
       if (overviewBtn) overviewBtn.click();
-
     });
   });
 }
@@ -257,14 +255,24 @@ export function initControls() {
     };
 
     const template = html`
-      <button class="dropdown-item active" data-value="none" role="option" aria-selected=${state.currentGroupKey === null ? "true" : "false"}>
+      <button
+        class="dropdown-item active"
+        data-value="none"
+        role="option"
+        aria-selected=${state.currentGroupKey === null ? "true" : "false"}
+      >
         Group By: None
       </button>
       ${Array.from(tagKeys)
         .sort()
         .map(
           (key) => html`
-            <button class="dropdown-item" data-value="${key}" role="option" aria-selected=${state.currentGroupKey === key ? "true" : "false"}>
+            <button
+              class="dropdown-item"
+              data-value="${key}"
+              role="option"
+              aria-selected=${state.currentGroupKey === key ? "true" : "false"}
+            >
               Group By: ${key.charAt(0).toUpperCase() + key.slice(1)}
             </button>
           `

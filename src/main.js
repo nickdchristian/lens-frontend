@@ -15,13 +15,7 @@ window.addEventListener("unhandledrejection", (event) => {
 });
 import { fetchEvents } from "./api/client.js";
 import { applyTheme } from "./ui/theme.js";
-import {
-  initDOM,
-  initTabs,
-  initControls,
-  renderSidebar,
-  renderDashboard,
-} from "./ui/ui.js";
+import { initDOM, initTabs, initControls } from "./ui/ui.js";
 
 export async function init() {
   if (import.meta.env.DEV) {

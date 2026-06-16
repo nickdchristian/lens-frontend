@@ -17,7 +17,10 @@ const scheduleNotify = () => {
 };
 
 const initialState = {
-  isDarkMode: typeof window !== "undefined" && window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)").matches : false,
+  isDarkMode:
+    typeof window !== "undefined" && window.matchMedia
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches
+      : false,
   currentTab: "dashboard",
   allEvents: [],
   selectedRepository: "All",
