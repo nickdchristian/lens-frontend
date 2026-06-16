@@ -1,17 +1,9 @@
 import { state } from "./state.js?v=100";
-import {
-  updateEventReq,
-  deleteEventReq,
-  fetchApiKeys,
-  createApiKey,
-  revokeApiKey,
-  getSettings,
-  updateSettings,
-} from "./api.js?v=100";
+
 import { applyTheme, getAccentColor } from "./theme.js?v=100";
 import { renderOverview } from "./charts.js?v=101";
 
-let refreshDataCallback = null;
+
 
 const escapeHtml = (unsafe) =>
   String(unsafe ?? "").replace(
@@ -46,7 +38,6 @@ export function initDOM() {
   DOM.viewTitle = document.getElementById("view-title");
   DOM.viewSubtitle = document.getElementById("view-subtitle");
   DOM.overviewBtn = document.querySelector('.tab-btn[data-tab="overview"]');
-  DOM.navSettingsBtn = document.getElementById("nav-settings-btn");
   DOM.editModal = document.getElementById("edit-modal");
   DOM.traceTimeline = document.getElementById("artifact-trace-timeline");
   DOM.traceDetails = document.getElementById("trace-details-panel");
@@ -205,15 +196,11 @@ export function initTabs() {
   const tabBtns = document.querySelectorAll(".tab-btn");
   const tabContents = document.querySelectorAll(".tab-content");
   const contentHeader = document.querySelector(".content-header");
-  const navSettingsBtn = document.getElementById("nav-settings-btn");
   const logoBtn = document.getElementById("logo-btn");
 
   tabBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
-      document.body.classList.remove("settings-active");
       contentHeader.style.display = "block";
-      const settingsBtn = document.getElementById("nav-settings-btn");
-      if (settingsBtn) settingsBtn.classList.remove("active");
 
       tabBtns.forEach((b) => b.classList.remove("active"));
       tabContents.forEach((c) => c.classList.remove("active"));
@@ -223,24 +210,9 @@ export function initTabs() {
     });
   });
 
-  if (navSettingsBtn) {
-    navSettingsBtn.addEventListener("click", () => {
-      document.body.classList.add("settings-active");
-      document
-        .querySelectorAll(".nav-item, .group-header")
-        .forEach((b) => b.classList.remove("active"));
-      tabBtns.forEach((b) => b.classList.remove("active"));
-      navSettingsBtn.classList.add("active");
-
-      contentHeader.style.display = "none";
-      tabContents.forEach((c) => c.classList.remove("active"));
-      document.getElementById("tab-settings").classList.add("active");
-    });
-  }
-
   if (logoBtn) {
     logoBtn.addEventListener("click", () => {
-      document.body.classList.remove("settings-active");
+
       state.currentRepo = null;
       state.currentGroupVal = null;
       state.currentArtifact = null;
@@ -259,10 +231,8 @@ export function initTabs() {
   topNavBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
       const mode = btn.dataset.mode;
-      const isSettingsActive =
-        document.body.classList.contains("settings-active");
 
-      if (state.appMode === mode && !isSettingsActive) return;
+      if (state.appMode === mode) return;
 
       state.appMode = mode;
       state.currentRepo = null;
@@ -277,45 +247,13 @@ export function initTabs() {
       );
       if (overviewBtn) overviewBtn.click();
 
-      document.body.classList.remove("settings-active");
-      const settingsBtn = document.getElementById("nav-settings-btn");
-      if (settingsBtn) settingsBtn.classList.remove("active");
-
       renderSidebar();
       renderDashboard();
     });
   });
-
-  const settingsTabs = document.querySelectorAll("[data-settings-tab]");
-  settingsTabs.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const targetId = btn.dataset.settingsTab;
-      const titleEl = document.getElementById("settings-title");
-
-      // Update active state in sidebar
-      settingsTabs.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-
-      // Update title
-      if (titleEl) titleEl.textContent = btn.textContent;
-
-      // Show corresponding group
-      document.querySelectorAll(".settings-group").forEach((g) => {
-        g.style.display = "none";
-        g.classList.remove("active");
-      });
-      const targetGroup = document.getElementById(`settings-group-${targetId}`);
-      if (targetGroup) {
-        targetGroup.style.display = "block";
-        // Small timeout to allow display: block to apply before animation class
-        setTimeout(() => targetGroup.classList.add("active"), 10);
-      }
-    });
-  });
 }
 
-export function initControls(refreshCb) {
-  refreshDataCallback = refreshCb;
+export function initControls() {
   const tagKeys = new Set();
   state.allEvents.forEach((e) => {
     if (e.tags) {
@@ -410,143 +348,6 @@ export function initControls(refreshCb) {
       renderDashboard(true);
     });
   }
-
-  const apiKeysList = document.getElementById("api-keys-list");
-  const btnCreateKey = document.getElementById("btn-create-key");
-  const newKeyAlert = document.getElementById("new-key-alert");
-  const newKeyDisplay = document.getElementById("new-key-display");
-
-  async function refreshActionKeys() {
-    const actionKeysCard = document.getElementById("action-keys-card");
-    const logoutCard = document.getElementById("logout-card");
-    const loginCard = document.getElementById("login-card");
-
-    if (!state.isLoggedIn) {
-      if (actionKeysCard) actionKeysCard.style.display = "none";
-      if (logoutCard) logoutCard.style.display = "none";
-      if (loginCard) loginCard.style.display = "block";
-      return;
-    } else {
-      if (actionKeysCard) actionKeysCard.style.display = "block";
-      if (logoutCard) logoutCard.style.display = "block";
-      if (loginCard) loginCard.style.display = "none";
-    }
-
-    const keys = await fetchApiKeys();
-    if (!keys || !actionKeysCard || !apiKeysList) {
-      if (actionKeysCard) actionKeysCard.style.display = "none";
-      return;
-    }
-
-    actionKeysCard.style.display = "block";
-    apiKeysList.innerHTML = keys
-      .map(
-        (k) => `
-          <tr>
-              <td>${escapeHtml(k.name)}</td>
-              <td><code>${escapeHtml(k.prefix)}...</code></td>
-              <td class="timestamp">${new Date(k.created_at).toLocaleString()}</td>
-              <td>
-                  <span class="status-badge ${k.is_active ? "success" : "error"}">
-                      ${k.is_active ? "Active" : "Revoked"}
-                  </span>
-              </td>
-              <td>
-                  ${k.is_active ? `<button class="btn btn-danger btn-sm" onclick="window.revokeActionKey(${k.id})">Revoke</button>` : ""}
-              </td>
-          </tr>
-      `
-      )
-      .join("");
-  }
-
-  window.revokeActionKey = async (id) => {
-    if (
-      confirm(
-        "Are you sure you want to revoke this key? This cannot be undone."
-      )
-    ) {
-      if (await revokeApiKey(id)) {
-        await refreshActionKeys();
-      } else {
-        alert("Failed to revoke key.");
-      }
-    }
-  };
-
-  if (btnCreateKey) {
-    btnCreateKey.addEventListener("click", async () => {
-      const name = prompt(
-        "Enter a description for this Action Key (e.g. 'Deploy Action'):"
-      );
-      if (!name) return;
-
-      const newKey = await createApiKey(name);
-      if (newKey) {
-        newKeyDisplay.textContent = newKey.raw_key;
-        newKeyAlert.style.display = "block";
-        await refreshActionKeys();
-      } else {
-        alert("Failed to create key.");
-      }
-    });
-  }
-
-  async function refreshSystemSettings() {
-    const systemNav = document.getElementById("settings-system-nav");
-    if (!state.isLoggedIn) {
-      if (systemNav) systemNav.style.display = "none";
-      return;
-    }
-    if (systemNav) systemNav.style.display = "block";
-
-    const config = await getSettings();
-    if (!config) return;
-
-    document.getElementById("setting-retention-days").value =
-      config.retention_days;
-    document.getElementById("setting-rate-limit-events").value =
-      config.rate_limit_events;
-    document.getElementById("setting-rate-limit-api").value =
-      config.rate_limit_api;
-    document.getElementById("setting-default-view").value =
-      config.default_dashboard_view;
-    document.getElementById("setting-default-timeframe").value =
-      config.default_timeframe_days;
-  }
-
-  const btnSaveSystemSettings = document.getElementById(
-    "btn-save-system-settings"
-  );
-  if (btnSaveSystemSettings) {
-    btnSaveSystemSettings.addEventListener("click", async () => {
-      const payload = {
-        retention_days: parseInt(
-          document.getElementById("setting-retention-days").value,
-          10
-        ),
-        rate_limit_events: document.getElementById("setting-rate-limit-events")
-          .value,
-        rate_limit_api: document.getElementById("setting-rate-limit-api").value,
-        default_dashboard_view: document.getElementById("setting-default-view")
-          .value,
-        default_timeframe_days: parseInt(
-          document.getElementById("setting-default-timeframe").value,
-          10
-        ),
-      };
-
-      const updated = await updateSettings(payload);
-      if (updated) {
-        alert("Settings saved successfully!");
-      } else {
-        alert("Failed to save settings.");
-      }
-    });
-  }
-
-  refreshActionKeys();
-  refreshSystemSettings();
 }
 
 function eventMatchesSearch(e, q) {
@@ -736,17 +537,7 @@ export function renderSidebar() {
   }
 }
 
-export function renderDashboard(keepSettingsOpen = false) {
-  const navSettingsBtn = document.getElementById("nav-settings-btn");
-  if (
-    !keepSettingsOpen &&
-    navSettingsBtn &&
-    navSettingsBtn.classList.contains("active")
-  ) {
-    const overviewBtn = document.querySelector('.tab-btn[data-tab="overview"]');
-    if (overviewBtn) overviewBtn.click();
-  }
-
+export function renderDashboard() {
   let dashboardEvents = state.allEvents;
   let title =
     state.appMode === "repositories" ? "All Repositories" : "All Artifacts";
@@ -876,26 +667,9 @@ export function renderDataGrid(events) {
                         ${formatDictionaryRow(event.metrics)}
                     </div>
                 </div>
-                ${
-                  state.isLoggedIn
-                    ? `
-                <div class="details-actions">
-                    <button class="action-btn edit-btn">Edit</button>
-                    <button class="action-btn delete-btn delete">Delete</button>
-                </div>
-                `
-                    : ""
-                }
+
             </div>
         `;
-
-      if (state.isLoggedIn) {
-        const editBtn = detailsTd.querySelector(".edit-btn");
-        editBtn.addEventListener("click", () => openEditModal(event.id));
-
-        const deleteBtn = detailsTd.querySelector(".delete-btn");
-        deleteBtn.addEventListener("click", () => deleteEvent(event.id));
-      }
 
       detailsTr.appendChild(detailsTd);
       tbody.appendChild(detailsTr);
@@ -909,76 +683,4 @@ export function renderDataGrid(events) {
           .classList.toggle("expanded", !isExpanded);
       });
     });
-}
-
-export function initModal(refreshCb) {
-  refreshDataCallback = refreshCb;
-  const modal = document.getElementById("edit-modal");
-  const closeBtn = document.getElementById("modal-close");
-  const cancelBtn = document.getElementById("modal-cancel");
-  const form = document.getElementById("edit-form");
-
-  const closeFn = () => (modal.style.display = "none");
-  closeBtn.addEventListener("click", closeFn);
-  cancelBtn.addEventListener("click", closeFn);
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const id = document.getElementById("edit-event-id").value;
-    const tagsRaw = document.getElementById("edit-tags").value;
-    const dataRaw = document.getElementById("edit-custom-data").value;
-    const metricsRaw = document.getElementById("edit-metrics").value;
-
-    try {
-      const payload = {
-        tags: tagsRaw ? JSON.parse(tagsRaw) : null,
-        custom_data: dataRaw ? JSON.parse(dataRaw) : null,
-        metrics: metricsRaw ? JSON.parse(metricsRaw) : null,
-      };
-
-      const ok = await updateEventReq(id, payload);
-
-      if (ok) {
-        closeFn();
-        if (refreshDataCallback) await refreshDataCallback();
-      } else {
-        alert("Failed to update event");
-      }
-    } catch (err) {
-      alert("Invalid JSON format or network error: " + err.message);
-    }
-  });
-}
-
-export function openEditModal(id) {
-  const event = state.allEvents.find((e) => e.id === id);
-  if (!event) return;
-
-  document.getElementById("edit-event-id").value = event.id;
-  document.getElementById("edit-tags").value = event.tags
-    ? JSON.stringify(event.tags, null, 2)
-    : "";
-  document.getElementById("edit-custom-data").value = event.custom_data
-    ? JSON.stringify(event.custom_data, null, 2)
-    : "";
-  document.getElementById("edit-metrics").value = event.metrics
-    ? JSON.stringify(event.metrics, null, 2)
-    : "";
-
-  document.getElementById("edit-modal").style.display = "flex";
-}
-
-export async function deleteEvent(id) {
-  if (!confirm("Are you sure you want to delete this event?")) return;
-
-  try {
-    const ok = await deleteEventReq(id);
-    if (ok) {
-      if (refreshDataCallback) await refreshDataCallback();
-    } else {
-      alert("Failed to delete event");
-    }
-  } catch (err) {
-    alert("Network error: " + err.message);
-  }
 }

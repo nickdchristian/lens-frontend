@@ -1,12 +1,9 @@
 export const state = {
-  repositories: {},
-  groups: [],
-  activeChartInstances: [],
-  searchQuery: "",
-  historySearchQuery: "",
-  isDarkMode: localStorage.getItem("theme") === "dark",
-  isLoggedIn: false,
-  username: null,
-  appMode: "repositories",
+  isDarkMode: window.matchMedia("(prefers-color-scheme: dark)").matches,
+  currentTab: "dashboard", // 'dashboard' or 'settings'
   allEvents: [],
+  selectedRepository: "All",
+  searchQuery: "",
+  groupBy: "None",
+  historySearchQuery: "",
 };
