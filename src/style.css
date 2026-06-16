@@ -220,15 +220,6 @@ body {
   background-color: color-mix(in srgb, var(--theme-primary) 15%, transparent);
 }
 
-/* SETTINGS ACTIVE STATE */
-body.settings-active #sidebar-nav-dashboard {
-  display: none;
-}
-
-body.settings-active #sidebar-nav-settings {
-  display: block !important;
-}
-
 /* SIDEBAR */
 .sidebar {
   width: var(--sidebar-width);
