@@ -1,6 +1,11 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
+  root: "src",
+  build: {
+    outDir: "../dist",
+    emptyOutDir: true,
+  },
   server: {
     proxy: {
       "/api": {
@@ -11,7 +16,7 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
-    setupFiles: ["./vitest.setup.js"],
-    exclude: ["node_modules", "dist", ".idea", ".git", ".cache", "e2e/**"],
+    setupFiles: ["../config/vitest.setup.js"],
+    exclude: ["node_modules", "dist", ".idea", ".git", ".cache", "../tests/**"],
   },
 });
