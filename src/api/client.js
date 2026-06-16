@@ -1,3 +1,5 @@
+import { logger } from "../utils/logger.js";
+
 export async function fetchEvents(repository = "lens") {
   try {
     const response = await fetch(
@@ -8,7 +10,7 @@ export async function fetchEvents(repository = "lens") {
     }
     return await response.json();
   } catch (error) {
-    console.error("API error:", error);
+    logger.error("API fetch error", { error: error.message, repository });
     return { status: "error", events: [] };
   }
 }

@@ -1,13 +1,13 @@
 import Chart from "chart.js/auto";
-import { state } from "./state.js?v=100";
+import { state } from "../state/store.js";
 import {
   getNeutralLine,
   getActiveSingleLine,
   getGridLine,
   getTextColor,
   getAccentColor,
-} from "./theme.js?v=100";
-import { renderArtifactTrace } from "./ui.js?v=100";
+} from "./theme.js";
+import { renderArtifactTrace } from "./ui.js";
 
 export function renderOverview(events, isSpecificView) {
   const metadataSection = document.getElementById("metadata-section");

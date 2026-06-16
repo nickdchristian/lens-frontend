@@ -1,28 +1,7 @@
-import { state } from "./state.js?v=100";
-
-import { applyTheme, getAccentColor } from "./theme.js?v=100";
-import { renderOverview } from "./charts.js?v=101";
-
-const escapeHtml = (unsafe) =>
-  String(unsafe ?? "").replace(
-    /[&<"'>]/g,
-    (m) =>
-      ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;",
-      })[m]
-  );
-
-const debounce = (func, wait) => {
-  let timeout;
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(args), wait);
-  };
-};
+import { state } from "../state/store.js";
+import { applyTheme, getAccentColor } from "./theme.js";
+import { renderOverview } from "./charts.js";
+import { escapeHtml, debounce, formatDictionary, formatDictionaryRow } from "../utils/formatters.js";
 
 const DOM = {};
 export function initDOM() {
@@ -129,18 +108,6 @@ const getEmptyPanelHtml = () => `
     </div>
 `;
 
-const formatDictionary = (data) => {
-  if (!data || Object.keys(data).length === 0)
-    return '<div class="empty-state" style="font-size: 0.85rem; color: var(--text-secondary);">None</div>';
-  return `<div style="display: grid; grid-template-columns: max-content 1fr; gap: 0.5rem 1rem; margin-top: 0.75rem;">${Object.entries(
-    data
-  )
-    .map(([k, v]) => {
-      const displayVal = typeof v === "object" ? JSON.stringify(v) : v;
-      return `<div style="color: var(--text-secondary); font-size: 0.85rem;">${escapeHtml(k.replace(/_/g, " "))}</div><div style="font-family: monospace; font-size: 0.85rem; word-break: break-all; color: var(--text-primary);">${escapeHtml(displayVal)}</div>`;
-    })
-    .join("")}</div>`;
-};
 
 window.selectTraceNode = function (index) {
   if (!window.currentTraceEvents || !window.currentTraceEvents[index]) return;
@@ -629,17 +596,6 @@ export function renderDataGrid(events) {
       });
 
       tbody.appendChild(tr);
-
-      const formatDictionaryRow = (data) => {
-        if (!data || Object.keys(data).length === 0)
-          return '<span class="empty-state">None</span>';
-        return `<dl class="data-list">${Object.entries(data)
-          .map(([k, v]) => {
-            const displayVal = typeof v === "object" ? JSON.stringify(v) : v;
-            return `<div class="data-row"><dt>${escapeHtml(k.replace(/_/g, " "))}</dt><dd>${escapeHtml(displayVal)}</dd></div>`;
-          })
-          .join("")}</dl>`;
-      };
 
       const detailsTr = document.createElement("tr");
       detailsTr.className = "grid-row-details";

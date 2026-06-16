@@ -1,4 +1,4 @@
-import { state } from "./state.js?v=2";
+import { state } from "../state/store.js";
 
 export function applyTheme(dark) {
   if (dark) {
