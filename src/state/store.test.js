@@ -1,6 +1,6 @@
 import { expect, test, describe } from "vitest";
 
-import { state } from "../state.js";
+import { state } from "./store.js";
 
 describe("Global State", () => {
   test("should initialize with default values", () => {
