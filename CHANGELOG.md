@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.6.0...lens-frontend-v0.7.0) (2026-06-17)
+
+
+### Features
+
+* ui polish, structural refactor, and performance optimizations ([#21](https://github.com/nickdchristian/lens-frontend/issues/21)) ([f9837cd](https://github.com/nickdchristian/lens-frontend/commit/f9837cd43f489bc4f46e5f8ba092fb0dcc4b049d))
+
 ## [0.6.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.5.1...lens-frontend-v0.6.0) (2026-06-17)
 
 
