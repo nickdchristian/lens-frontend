@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.5.1...lens-frontend-v0.6.0) (2026-06-17)
+
+
+### Features
+
+* implement ui pagination for data grid ([#20](https://github.com/nickdchristian/lens-frontend/issues/20)) ([9b58e84](https://github.com/nickdchristian/lens-frontend/commit/9b58e84fc9495947da69cdbe2fc04d03ef96c7d4))
+
+
+### Bug Fixes
+
+* grouping bug logic in ui.js ([#18](https://github.com/nickdchristian/lens-frontend/issues/18)) ([fbf9802](https://github.com/nickdchristian/lens-frontend/commit/fbf98027a9efda87cb3f915a9eda89fb7bdea5c4))
+
 ## [0.5.1](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.5.0...lens-frontend-v0.5.1) (2026-06-17)
 
 
