@@ -72,7 +72,7 @@ export function renderOverview(events, isSpecificView) {
     };
 
     if (state.currentRepo) {
-      const latestEvent = events[events.length - 1];
+      const latestEvent = events[0];
       renderList(latestEvent.tags, tagsList);
       renderList(latestEvent.custom_data, customDataList);
     } else {
@@ -81,7 +81,7 @@ export function renderOverview(events, isSpecificView) {
 
       uniqueRepos.forEach((repo) => {
         const repoEvents = uniqueReposMap[repo];
-        const latest = repoEvents[repoEvents.length - 1];
+        const latest = repoEvents[0];
 
         const latestTags = latest.tags ?? {};
         const latestData = latest.custom_data ?? {};
@@ -150,7 +150,7 @@ export function renderOverview(events, isSpecificView) {
     const datasets = [];
 
     uniqueRepos.forEach((repo, rIdx) => {
-      const repoEvents = uniqueReposMap[repo].slice(-100);
+      const repoEvents = uniqueReposMap[repo].slice(0, 100).reverse();
       const data = repoEvents.map((e) => e.metrics?.[key] ?? null);
 
       if (!data.every((v) => v === null)) {
