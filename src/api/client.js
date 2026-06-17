@@ -19,9 +19,12 @@ export async function fetchEvents(repository = "lens") {
 
   while (attempt < maxAttempts) {
     try {
+      const apiHost = localStorage.getItem("apiHost") || "";
+      const baseUrl = apiHost ? apiHost.replace(/\/$/, "") : "";
+
       const url = repository
-        ? `/api/v1/events/${repository}?limit=100&t=` + Date.now()
-        : `/api/v1/events?limit=1000&t=` + Date.now();
+        ? `${baseUrl}/api/v1/events/${repository}?limit=100&t=` + Date.now()
+        : `${baseUrl}/api/v1/events?limit=1000&t=` + Date.now();
 
       const response = await fetch(url, { signal });
 

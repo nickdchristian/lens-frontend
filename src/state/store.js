@@ -17,10 +17,20 @@ const scheduleNotify = () => {
 };
 
 const initialState = {
-  isDarkMode:
-    typeof window !== "undefined" && window.matchMedia
-      ? window.matchMedia("(prefers-color-scheme: dark)").matches
-      : false,
+  isDarkMode: (() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("theme");
+      if (stored === "dark") return true;
+      if (stored === "light") return false;
+      return (
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+      );
+    }
+    return false;
+  })(),
+  apiHost:
+    typeof window !== "undefined" ? localStorage.getItem("apiHost") || "" : "",
   currentTab: "dashboard",
   allEvents: [],
   selectedRepository: "All",

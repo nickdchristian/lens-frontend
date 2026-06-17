@@ -1,4 +1,5 @@
 import Chart from "chart.js/auto";
+import { html, render } from "lit";
 import { state } from "../state/store.js";
 import {
   getNeutralLine,
@@ -7,7 +8,7 @@ import {
   getTextColor,
   getAccentColor,
 } from "./theme.js";
-import { renderArtifactTrace } from "./ui.js";
+import { renderArtifactTrace } from "./artifacts.js";
 
 export function renderOverview(events, isSpecificView) {
   const metadataSection = document.getElementById("metadata-section");
@@ -23,21 +24,22 @@ export function renderOverview(events, isSpecificView) {
     }
   });
   state.activeChartInstances = [];
-  chartsGrid.innerHTML = "";
-  tagsList.innerHTML = "";
-  customDataList.innerHTML = "";
+
+  if (chartsGrid) render(html``, chartsGrid);
+  if (tagsList) render(html``, tagsList);
+  if (customDataList) render(html``, customDataList);
 
   const overviewCharts = document.getElementById("overview-charts");
   const timelineContainer = document.getElementById("artifact-trace-container");
 
   if (state.currentArtifact) {
-    metadataSection.style.display = "none";
-    overviewCharts.style.display = "none";
+    if (metadataSection) metadataSection.style.display = "none";
+    if (overviewCharts) overviewCharts.style.display = "none";
     if (timelineContainer) timelineContainer.style.display = "block";
     renderArtifactTrace(state.currentArtifact);
     return;
   } else {
-    overviewCharts.style.display = "block";
+    if (overviewCharts) overviewCharts.style.display = "block";
     if (timelineContainer) timelineContainer.style.display = "none";
   }
 
@@ -50,19 +52,23 @@ export function renderOverview(events, isSpecificView) {
   });
   const uniqueRepos = Object.keys(uniqueReposMap).sort();
 
-  if (isSpecificView) {
+  if (isSpecificView && metadataSection && tagsList && customDataList) {
     metadataSection.style.display = "block";
 
     const renderList = (dataObj, el) => {
       if (!dataObj || Object.keys(dataObj).length === 0) {
-        el.innerHTML = '<li><span class="metadata-key">None</span></li>';
+        render(html`<li><span class="metadata-key">None</span></li>`, el);
         return;
       }
-      Object.entries(dataObj).forEach(([k, v]) => {
-        const li = document.createElement("li");
-        li.innerHTML = `<span class="metadata-key">${k}</span><span class="metadata-val">${v}</span>`;
-        el.appendChild(li);
-      });
+
+      const items = Object.entries(dataObj).map(
+        ([k, v]) =>
+          html`<li>
+            <span class="metadata-key">${k}</span
+            ><span class="metadata-val">${v}</span>
+          </li>`
+      );
+      render(items, el);
     };
 
     if (state.currentRepo) {
@@ -100,7 +106,7 @@ export function renderOverview(events, isSpecificView) {
       renderList(intersectedTags, tagsList);
       renderList(intersectedData, customDataList);
     }
-  } else {
+  } else if (metadataSection) {
     metadataSection.style.display = "none";
   }
 
@@ -127,6 +133,19 @@ export function renderOverview(events, isSpecificView) {
 
   const labels = Array.from({ length: maxEvents }, (_, i) => `#${i + 1}`);
 
+  if (chartsGrid) {
+    const chartCards = Array.from(numericKeys).map((key, index) => {
+      return html`
+        <div class="chart-card">
+          <h3>${key.replace(/_/g, " ")}</h3>
+          <canvas id="chart-${index}"></canvas>
+        </div>
+      `;
+    });
+
+    render(chartCards, chartsGrid);
+  }
+
   Array.from(numericKeys).forEach((key, index) => {
     const datasets = [];
 
@@ -141,7 +160,6 @@ export function renderOverview(events, isSpecificView) {
         datasets.push({
           label: repo.split("/").pop() || repo,
           data: data,
-          vibrantColor: color,
           borderColor: state.currentRepo
             ? getActiveSingleLine()
             : getNeutralLine(),
@@ -150,10 +168,12 @@ export function renderOverview(events, isSpecificView) {
           pointBorderColor: getGridLine(),
           pointBorderWidth: 1,
           borderWidth: 2,
+          hoverBorderWidth: 3,
+          hoverBorderColor: color,
           tension: 0.3,
           pointRadius: 0,
-          pointHoverRadius: 0,
-          hitRadius: 20,
+          pointHoverRadius: 4,
+          hitRadius: 10,
           fill: false,
           order: 1,
         });
@@ -162,12 +182,9 @@ export function renderOverview(events, isSpecificView) {
 
     if (datasets.length === 0) return;
 
-    const card = document.createElement("div");
-    card.className = "chart-card";
-    card.innerHTML = `<h3>${key.replace(/_/g, " ")}</h3><canvas id="chart-${index}"></canvas>`;
-    chartsGrid.appendChild(card);
-
     const canvas = document.getElementById(`chart-${index}`);
+    if (!canvas) return;
+
     const ctx = canvas.getContext("2d");
     const chart = new Chart(ctx, {
       type: "line",
@@ -175,93 +192,15 @@ export function renderOverview(events, isSpecificView) {
       options: {
         responsive: true,
         interaction: { intersect: false, mode: "index" },
-        onHover: (e, activeElements, chart) => {
-          if (chart.isHoveringLegend) return;
-          let hoveredDatasetIndex = null;
-          let minGlobalDist = Infinity;
-          chart.data.datasets.forEach((dataset, idx) => {
-            const meta = chart.getDatasetMeta(idx);
-            if (meta.hidden) return;
-            const points = meta.data;
-            if (!points || points.length === 0) return;
-            let closestDistForDataset = Infinity;
-            for (let i = 0; i < points.length - 1; i++) {
-              const p1 = points[i],
-                p2 = points[i + 1];
-              if (
-                typeof p1.x !== "number" ||
-                typeof p1.y !== "number" ||
-                typeof p2.x !== "number" ||
-                typeof p2.y !== "number"
-              )
-                continue;
-              if (e.x >= p1.x && e.x <= p2.x) {
-                const ratio = p2.x === p1.x ? 0 : (e.x - p1.x) / (p2.x - p1.x);
-                const expectedY = p1.y + ratio * (p2.y - p1.y);
-                const verticalDist = Math.abs(e.y - expectedY);
-                if (verticalDist < closestDistForDataset)
-                  closestDistForDataset = verticalDist;
-              }
-            }
-            if (closestDistForDataset === Infinity) {
-              const first = points[0],
-                last = points[points.length - 1];
-              if (
-                first &&
-                typeof first.x === "number" &&
-                typeof first.y === "number" &&
-                e.x <= first.x
-              ) {
-                closestDistForDataset = Math.sqrt(
-                  (e.x - first.x) ** 2 + (e.y - first.y) ** 2
-                );
-              }
-              if (
-                last &&
-                typeof last.x === "number" &&
-                typeof last.y === "number" &&
-                e.x >= last.x
-              ) {
-                closestDistForDataset = Math.sqrt(
-                  (e.x - last.x) ** 2 + (e.y - last.y) ** 2
-                );
-              }
-            }
-            if (closestDistForDataset < minGlobalDist) {
-              minGlobalDist = closestDistForDataset;
-              if (minGlobalDist < 25) hoveredDatasetIndex = idx;
-            }
-          });
-          chart.hoveredDatasetIndex = hoveredDatasetIndex;
-          chart.data.datasets.forEach((dataset, i) => {
-            if (hoveredDatasetIndex === null) {
-              dataset.borderWidth = 2;
-              dataset.borderColor = state.currentRepo
-                ? getActiveSingleLine()
-                : getNeutralLine();
-              dataset.order = 1;
-            } else if (i === hoveredDatasetIndex) {
-              dataset.borderWidth = 2.5;
-              dataset.borderColor = dataset.vibrantColor;
-              dataset.order = 0;
-            } else {
-              dataset.borderWidth = 1;
-              dataset.borderColor = getNeutralLine();
-              dataset.order = 1;
-            }
-          });
-          chart.update();
+        hover: {
+          mode: "index",
+          intersect: false,
         },
         plugins: {
           tooltip: {
             enabled: true,
-            filter: function (tooltipItem) {
-              return (
-                tooltipItem.chart.hoveredDatasetIndex !== null &&
-                tooltipItem.datasetIndex ===
-                  tooltipItem.chart.hoveredDatasetIndex
-              );
-            },
+            mode: "index",
+            intersect: false,
           },
           legend: {
             display: !state.currentRepo,
@@ -275,12 +214,11 @@ export function renderOverview(events, isSpecificView) {
             },
             onHover: function (e, legendItem, legend) {
               const ci = legend.chart;
-              ci.isHoveringLegend = true;
               const hoveredDatasetIndex = legendItem.datasetIndex;
               ci.data.datasets.forEach((d, i) => {
                 if (i === hoveredDatasetIndex) {
-                  d.borderWidth = 2.5;
-                  d.borderColor = d.vibrantColor;
+                  d.borderWidth = 3;
+                  d.borderColor = d.backgroundColor;
                   d.order = 0;
                 } else {
                   d.borderWidth = 1;
@@ -292,7 +230,6 @@ export function renderOverview(events, isSpecificView) {
             },
             onLeave: function (e, legendItem, legend) {
               const ci = legend.chart;
-              ci.isHoveringLegend = false;
               ci.data.datasets.forEach((d) => {
                 d.borderWidth = 2;
                 d.borderColor = state.currentRepo
@@ -315,17 +252,5 @@ export function renderOverview(events, isSpecificView) {
       },
     });
     state.activeChartInstances.push(chart);
-
-    canvas.addEventListener("mouseleave", () => {
-      chart.isHoveringLegend = false;
-      chart.data.datasets.forEach((dataset) => {
-        dataset.borderWidth = 2;
-        dataset.borderColor = state.currentRepo
-          ? getActiveSingleLine()
-          : getNeutralLine();
-        dataset.order = 1;
-      });
-      chart.update();
-    });
   });
 }
