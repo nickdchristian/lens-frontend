@@ -187,7 +187,7 @@ export function initTabs() {
 
   if (logoBtn) {
     logoBtn.addEventListener("click", () => {
-      state.currentRepo = null;
+      // state.currentRepo = null; removed to prevent All Repos view
       state.currentGroupVal = null;
       state.currentArtifact = null;
 
@@ -445,25 +445,16 @@ export function renderSidebar() {
         ${Object.keys(groups)
           .sort()
           .map((gVal) => {
-            if (!state.currentRepo && !state.currentGroupVal && !firstItemSet) {
+            if (!state.currentRepo && !firstItemSet) {
               state.currentGroupVal = gVal;
+              // Auto-select the first repo in this group instead of an aggregate view
+              state.currentRepo = Array.from(groups[gVal]).sort()[0];
               firstItemSet = true;
             }
-            const isGroupActive =
-              state.currentGroupVal === gVal && !state.currentRepo;
-            const onGroupClick = () => {
-              state.currentGroupVal = gVal;
-              state.currentRepo = null;
-            };
 
             return html`
               <li>
-                <button
-                  class="group-header ${isGroupActive ? "active" : ""}"
-                  @click=${onGroupClick}
-                >
-                  ${String(gVal).toUpperCase()}
-                </button>
+                <div class="group-header">${String(gVal).toUpperCase()}</div>
                 <ul class="nested-list">
                   ${Array.from(groups[gVal])
                     .sort()
@@ -546,18 +537,22 @@ export function renderDashboard() {
       subtitle = `Tracing artifacts across all repositories`;
     }
   } else {
+    if (state.currentGroupVal && state.currentGroupKey) {
+      dashboardEvents = dashboardEvents.filter(
+        (e) => e.tags && e.tags[state.currentGroupKey] === state.currentGroupVal
+      );
+    }
+
     if (state.currentRepo) {
-      dashboardEvents = state.allEvents.filter(
+      dashboardEvents = dashboardEvents.filter(
         (e) => e.repository === state.currentRepo
       );
       title = state.currentRepo;
-      subtitle = `Detailed overview for ${state.currentRepo}`;
-    } else if (state.currentGroupVal && state.currentGroupKey) {
-      dashboardEvents = state.allEvents.filter(
-        (e) => e.tags && e.tags[state.currentGroupKey] === state.currentGroupVal
-      );
-      title = `Group: ${state.currentGroupVal}`;
-      subtitle = `Aggregated data for all repositories where ${state.currentGroupKey} = ${state.currentGroupVal}`;
+      if (state.currentGroupVal) {
+        subtitle = `Detailed overview for ${state.currentRepo} in ${state.currentGroupVal}`;
+      } else {
+        subtitle = `Detailed overview for ${state.currentRepo}`;
+      }
     }
   }
 

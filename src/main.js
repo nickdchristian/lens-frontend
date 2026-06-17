@@ -33,8 +33,8 @@ export async function init() {
 
   async function loadDashboard() {
     try {
-      const data = await fetchEvents("lens");
-      if (data.status === "success" || data.length > 0) {
+      const data = await fetchEvents(null);
+      if (data && (data.status === "success" || data.length > 0)) {
         // MSW returns an array directly in our mock
         state.allEvents = data.events || data;
         initControls();
