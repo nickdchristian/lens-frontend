@@ -1204,3 +1204,40 @@ input:checked + .slider:before {
   overflow-y: auto;
   max-height: 400px;
 }
+
+/* Pagination Controls */
+.pagination-controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-4);
+}
+.pagination-buttons {
+  display: flex;
+  gap: var(--space-2);
+}
+.pagination-controls button {
+  padding: var(--space-2) var(--space-3);
+  font-weight: bold;
+  font-size: 1rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.pagination-controls button:hover:not(:disabled) {
+  background-color: var(--border-color);
+}
+.pagination-controls button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.pagination-info {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+

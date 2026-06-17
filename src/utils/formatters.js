@@ -1,3 +1,5 @@
+import { html } from "https://unpkg.com/lit-html?module";
+
 export const escapeHtml = (unsafe) =>
   String(unsafe ?? "").replace(
     /[&<"'>]/g,
@@ -33,27 +35,25 @@ export const debounce = (func, wait) => {
 
 export const formatDictionaryRow = (data) => {
   if (!data || Object.keys(data).length === 0) return "";
-  return Object.entries(data)
-    .map(
-      ([key, val]) =>
-        `<span class="tag-badge"><strong>${key}:</strong> ${String(val)}</span> `
-    )
-    .join("");
+  return Object.entries(data).map(
+    ([key, val]) =>
+      html`<span class="tag-badge"
+        ><strong>${key}:</strong> ${String(val)}</span
+      > `
+  );
 };
 
 export const formatDictionary = (data) => {
   if (!data || Object.keys(data).length === 0)
-    return `<span class="empty-state">None</span>`;
+    return html`<span class="empty-state">None</span>`;
 
-  return `<dl class="data-list">
-    ${Object.entries(data)
-      .map(([key, val]) => {
-        const displayVal = typeof val === "object" ? JSON.stringify(val) : val;
-        return `<div class="data-row">
+  return html`<dl class="data-list">
+    ${Object.entries(data).map(([key, val]) => {
+      const displayVal = typeof val === "object" ? JSON.stringify(val) : val;
+      return html`<div class="data-row">
         <dt>${key.replace(/_/g, " ")}</dt>
         <dd>${displayVal}</dd>
       </div>`;
-      })
-      .join("")}
+    })}
   </dl>`;
 };
