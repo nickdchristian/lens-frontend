@@ -33,6 +33,8 @@ const initialState = {
   currentGroupVal: null,
   currentArtifact: null,
   activeChartInstances: [],
+  currentPage: 1,
+  eventsPerPage: 25,
 };
 
 export const state = new Proxy(initialState, {

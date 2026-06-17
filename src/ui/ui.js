@@ -190,6 +190,7 @@ export function initTabs() {
       // state.currentRepo = null; removed to prevent All Repos view
       state.currentGroupVal = null;
       state.currentArtifact = null;
+      state.currentPage = 1;
 
       const overviewBtn = document.querySelector(
         '.tab-btn[data-tab="overview"]'
@@ -313,6 +314,7 @@ export function initControls() {
       "input",
       debounce(() => {
         state.searchQuery = DOM.searchInput.value.toLowerCase();
+        state.currentPage = 1;
       }, 100)
     );
   }
@@ -322,6 +324,7 @@ export function initControls() {
       "input",
       debounce(() => {
         state.historySearchQuery = DOM.historySearch.value.toLowerCase();
+        state.currentPage = 1;
         renderDashboard();
       }, 200)
     );
@@ -418,6 +421,7 @@ export function renderSidebar() {
               state.currentRepo = repo;
               state.currentGroupVal = null;
               state.currentArtifact = null;
+              state.currentPage = 1;
             };
             return html`
               <li>
@@ -474,6 +478,7 @@ export function renderSidebar() {
                         state.currentRepo = repo;
                         state.currentGroupVal = gVal;
                         state.currentArtifact = null;
+                        state.currentPage = 1;
                       };
                       return html`
                         <li>
@@ -513,6 +518,7 @@ export function renderSidebar() {
             state.currentArtifact = art;
             state.currentRepo = null;
             state.currentGroupVal = null;
+            state.currentPage = 1;
           };
           return html`
             <li>
@@ -590,6 +596,8 @@ export function renderDataGrid(events) {
   if (events.length === 0) {
     render(html``, thead);
     render(html``, tbody);
+    const paginationControls = document.getElementById("pagination-controls");
+    if (paginationControls) render(html``, paginationControls);
     return;
   }
 
@@ -613,48 +621,95 @@ export function renderDataGrid(events) {
     if (chevron) chevron.classList.toggle("expanded", !isExpanded);
   };
 
+  const totalEvents = events.length;
+  const totalPages = Math.ceil(totalEvents / state.eventsPerPage) || 1;
+
+  if (state.currentPage > totalPages) state.currentPage = totalPages;
+  if (state.currentPage < 1) state.currentPage = 1;
+
+  const startIndex = (state.currentPage - 1) * state.eventsPerPage;
+  const paginatedEvents = events.slice(
+    startIndex,
+    startIndex + state.eventsPerPage
+  );
+
   const bodyTemplate = html`
-    ${events
-      .slice(-100)
-      .reverse()
-      .map((event) => {
-        return html`
-          <tr class="grid-row-master" @click=${toggleRow}>
-            <td class="toggle-cell"><span class="chevron">&#9654;</span></td>
-            ${columns.map((col) => {
-              let val = event[col] ?? "-";
-              if (
-                col === "commit_sha" &&
-                typeof val === "string" &&
-                val.length > 7
-              ) {
-                val = val.substring(0, 7);
-              }
-              return html`<td>${val}</td>`;
-            })}
-          </tr>
-          <tr class="grid-row-details" style="display: none;">
-            <td colspan="${columns.length + 1}">
-              <div class="details-pane">
-                <div class="details-content">
-                  <div class="details-section">
-                    <h4>Tags</h4>
-                    ${formatDictionaryRow(event.tags)}
-                  </div>
-                  <div class="details-section">
-                    <h4>Custom Data</h4>
-                    ${formatDictionaryRow(event.custom_data)}
-                  </div>
-                  <div class="details-section">
-                    <h4>Metrics</h4>
-                    ${formatDictionaryRow(event.metrics)}
-                  </div>
+    ${paginatedEvents.map((event) => {
+      return html`
+        <tr class="grid-row-master" @click=${toggleRow}>
+          <td class="toggle-cell"><span class="chevron">&#9654;</span></td>
+          ${columns.map((col) => {
+            let val = event[col] ?? "-";
+            if (
+              col === "commit_sha" &&
+              typeof val === "string" &&
+              val.length > 7
+            ) {
+              val = val.substring(0, 7);
+            }
+            return html`<td>${val}</td>`;
+          })}
+        </tr>
+        <tr class="grid-row-details" style="display: none;">
+          <td colspan="${columns.length + 1}">
+            <div class="details-pane">
+              <div class="details-content">
+                <div class="details-section">
+                  <h4>Tags</h4>
+                  ${formatDictionaryRow(event.tags)}
+                </div>
+                <div class="details-section">
+                  <h4>Custom Data</h4>
+                  ${formatDictionaryRow(event.custom_data)}
+                </div>
+                <div class="details-section">
+                  <h4>Metrics</h4>
+                  ${formatDictionaryRow(event.metrics)}
                 </div>
               </div>
-            </td>
-          </tr>
-        `;
-      })}
+            </div>
+          </td>
+        </tr>
+      `;
+    })}
   `;
   render(bodyTemplate, tbody);
+
+  const paginationControls = document.getElementById("pagination-controls");
+  if (paginationControls) {
+    if (totalEvents > state.eventsPerPage) {
+      const onPrev = () => {
+        if (state.currentPage > 1) state.currentPage--;
+      };
+      const onNext = () => {
+        if (state.currentPage < totalPages) state.currentPage++;
+      };
+
+      const paginationTemplate = html`
+        <span class="pagination-info"
+          >Page ${state.currentPage} of ${totalPages} (${totalEvents}
+          events)</span
+        >
+        <div class="pagination-buttons">
+          <button
+            ?disabled=${state.currentPage === 1}
+            @click=${onPrev}
+            aria-label="Previous page"
+          >
+            &#8592;
+          </button>
+          <button
+            ?disabled=${state.currentPage === totalPages}
+            @click=${onNext}
+            aria-label="Next page"
+          >
+            &#8594;
+          </button>
+        </div>
+      `;
+      render(paginationTemplate, paginationControls);
+    } else {
+      render(html``, paginationControls);
+    }
+  }
 }
