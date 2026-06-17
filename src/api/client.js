@@ -19,10 +19,11 @@ export async function fetchEvents(repository = "lens") {
 
   while (attempt < maxAttempts) {
     try {
-      const response = await fetch(
-        `/api/v1/events/${repository}?limit=100&t=` + Date.now(),
-        { signal }
-      );
+      const url = repository
+        ? `/api/v1/events/${repository}?limit=100&t=` + Date.now()
+        : `/api/v1/events?limit=1000&t=` + Date.now();
+
+      const response = await fetch(url, { signal });
 
       if (!response.ok) {
         throw new Error(`Failed to fetch: ${response.statusText}`);
