@@ -433,12 +433,21 @@ export function renderSidebar() {
       `;
     } else {
       const groups = {};
+      const repoToGroup = {};
+
       filteredEvents.forEach((e) => {
-        if (e.tags && e.tags[state.currentGroupKey]) {
-          const gVal = e.tags[state.currentGroupKey];
-          if (!groups[gVal]) groups[gVal] = new Set();
-          groups[gVal].add(e.repository);
+        if (
+          !repoToGroup[e.repository] &&
+          e.tags &&
+          e.tags[state.currentGroupKey]
+        ) {
+          repoToGroup[e.repository] = e.tags[state.currentGroupKey];
         }
+      });
+
+      Object.entries(repoToGroup).forEach(([repo, gVal]) => {
+        if (!groups[gVal]) groups[gVal] = new Set();
+        groups[gVal].add(repo);
       });
 
       template = html`
