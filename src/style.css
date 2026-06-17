@@ -249,9 +249,9 @@ body {
   box-sizing: border-box;
   margin: 0;
   color: var(--text-primary);
-  background-color: var(--hover-bg);
-  border: 1px solid transparent;
-  border-radius: var(--radius-full);
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
   outline: none;
   -webkit-appearance: none;
   appearance: none;
@@ -383,7 +383,7 @@ button.lens-input {
   padding: var(--space-2) var(--space-3);
   font-size: var(--text-base);
   color: var(--text-secondary);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   cursor: pointer;
   transition:
     background-color 0.2s ease,
@@ -412,7 +412,8 @@ button.lens-input {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: var(--font-semibold);
-  margin: 0;
+  margin-bottom: var(--space-3);
+  padding: 0 var(--space-2);
 }
 
 details summary {
@@ -461,7 +462,7 @@ details[open] summary .chevron {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   transition: background-color 0.2s ease;
 }
 
@@ -482,16 +483,6 @@ details[open] summary .chevron {
   position: relative;
 }
 
-/* Subtle line to show nesting */
-.nested-list::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0.75rem;
-  width: 1px;
-  background-color: var(--border-color);
-}
 
 .nested-list .nav-item {
   padding-left: var(--space-6);
@@ -648,12 +639,14 @@ details[open] summary .chevron {
 /* DATA TABLE & SEARCH */
 .search-container {
   padding: var(--space-4) var(--space-6);
-  border-bottom: 1px solid var(--border-color);
-  background: var(--card-bg);
+  background: transparent;
 }
 
 .table-scroll-wrapper {
   overflow-x: auto;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background-color: var(--card-bg);
 }
 
 table {
@@ -1051,6 +1044,11 @@ input:checked + .slider:before {
   color: var(--text-primary);
 }
 
+.icon-btn.active {
+  color: var(--theme-primary);
+  background-color: color-mix(in srgb, var(--theme-primary) 15%, transparent);
+}
+
 .btn-secondary:hover {
   background-color: var(--border-color);
 }
@@ -1217,24 +1215,6 @@ input:checked + .slider:before {
 .pagination-buttons {
   display: flex;
   gap: var(--space-2);
-}
-.pagination-controls button {
-  padding: var(--space-2) var(--space-3);
-  font-weight: bold;
-  font-size: 1rem;
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.pagination-controls button:hover:not(:disabled) {
-  background-color: var(--border-color);
-}
-.pagination-controls button:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
 }
 .pagination-info {
   font-size: 0.9rem;

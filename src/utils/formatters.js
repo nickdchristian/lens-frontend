@@ -1,17 +1,4 @@
-import { html } from "https://unpkg.com/lit-html?module";
-
-export const escapeHtml = (unsafe) =>
-  String(unsafe ?? "").replace(
-    /[&<"'>]/g,
-    (m) =>
-      ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;",
-      })[m]
-  );
+import { html } from "lit";
 
 export const formatDate = (dateString) => {
   if (!dateString) return "N/A";
@@ -31,16 +18,6 @@ export const debounce = (func, wait) => {
     clearTimeout(timeout);
     timeout = setTimeout(() => func(args), wait);
   };
-};
-
-export const formatDictionaryRow = (data) => {
-  if (!data || Object.keys(data).length === 0) return "";
-  return Object.entries(data).map(
-    ([key, val]) =>
-      html`<span class="tag-badge"
-        ><strong>${key}:</strong> ${String(val)}</span
-      > `
-  );
 };
 
 export const formatDictionary = (data) => {

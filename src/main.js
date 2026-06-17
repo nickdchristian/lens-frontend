@@ -1,4 +1,4 @@
-import { state } from "./state/store.js";
+import { state, subscribe } from "./state/store.js";
 import { logger } from "./utils/logger.js";
 
 // Global error boundaries
@@ -15,7 +15,11 @@ window.addEventListener("unhandledrejection", (event) => {
 });
 import { fetchEvents } from "./api/client.js";
 import { applyTheme } from "./ui/theme.js";
-import { initDOM, initTabs, initControls } from "./ui/ui.js";
+import { initDOM } from "./ui/dom.js";
+import { initTabs, initControls } from "./ui/controls.js";
+import { renderSidebar } from "./ui/sidebar.js";
+import { renderDashboard } from "./ui/dashboard.js";
+import { renderArtifactTrace } from "./ui/artifacts.js";
 
 export async function init() {
   if (import.meta.env.DEV) {
@@ -30,6 +34,14 @@ export async function init() {
   initDOM();
   applyTheme(state.isDarkMode);
   initTabs();
+
+  subscribe(() => {
+    renderSidebar();
+    renderDashboard();
+    if (state.appMode === "artifacts" && state.currentArtifact) {
+      renderArtifactTrace(state.currentArtifact);
+    }
+  });
 
   async function loadDashboard() {
     try {
