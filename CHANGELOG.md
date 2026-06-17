@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.1](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.5.0...lens-frontend-v0.5.1) (2026-06-17)
+
+
+### Bug Fixes
+
+* frontend data logic ([#16](https://github.com/nickdchristian/lens-frontend/issues/16)) ([68a4164](https://github.com/nickdchristian/lens-frontend/commit/68a4164f7485d80aa66074b547049de0337dd3e4))
+
 ## [0.5.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.4.0...lens-frontend-v0.5.0) (2026-06-16)
 
 
