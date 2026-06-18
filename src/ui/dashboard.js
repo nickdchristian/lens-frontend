@@ -15,7 +15,8 @@ function historyEventMatchesSearch(e, q) {
     return true;
   if (e.repository?.toLowerCase().includes(q)) return true;
   if (e.commit_sha?.toLowerCase().includes(q)) return true;
-  if (e.artifact_version?.toLowerCase().includes(q)) return true;
+  if (e.artifact?.name?.toLowerCase().includes(q)) return true;
+  if (e.artifact?.version?.toLowerCase().includes(q)) return true;
 
   const searchDict = (dict) =>
     Object.entries(dict ?? {}).some(
@@ -60,9 +61,11 @@ export function renderDashboard() {
   if (state.appMode === "artifacts") {
     if (state.currentArtifact) {
       dashboardEvents = state.allEvents.filter(
-        (e) => e.artifact_version === state.currentArtifact
+        (e) =>
+          e.artifact?.name === state.currentArtifact.name &&
+          e.artifact?.version === state.currentArtifact.version
       );
-      title = `Artifact: ${state.currentArtifact}`;
+      title = `Artifact: ${state.currentArtifact.name} (${state.currentArtifact.version})`;
       subtitle = `Tracing artifacts across all repositories`;
     }
   } else {

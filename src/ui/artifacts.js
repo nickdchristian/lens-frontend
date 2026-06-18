@@ -87,22 +87,24 @@ window.selectTraceNode = function (index) {
   DOM.traceDetails.style.display = "flex";
 };
 
-export function renderArtifactTrace(versionQuery) {
+export function renderArtifactTrace(artifactObj) {
   if (!DOM.traceTimeline) return;
 
   if (DOM.traceDetails) DOM.traceDetails.style.display = "none";
 
   const matches = state.allEvents.filter(
     (e) =>
-      e.artifact_version &&
-      e.artifact_version.toLowerCase() === versionQuery.toLowerCase()
+      e.artifact &&
+      e.artifact.name === artifactObj.name &&
+      e.artifact.version === artifactObj.version
   );
 
   if (matches.length === 0) {
     const emptyTemplate = html`<div class="empty-state">
       <p>
-        No lifecycle events found for version
-        "<strong>${versionQuery}</strong>".
+        No lifecycle events found for artifact "<strong
+          >${artifactObj.name} (${artifactObj.version})</strong
+        >".
       </p>
     </div>`;
     render(emptyTemplate, DOM.traceTimeline);
@@ -112,10 +114,7 @@ export function renderArtifactTrace(versionQuery) {
   matches.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
   const traceNodes = matches.map((event, index) => {
-    let stage = event.workflow_name;
-    if (event.custom_data && event.custom_data.lifecycle_stage) {
-      stage = event.custom_data.lifecycle_stage;
-    }
+    const stage = event.workflow_name || "Unknown Workflow";
 
     const dateStr = new Date(event.timestamp).toLocaleString();
 
