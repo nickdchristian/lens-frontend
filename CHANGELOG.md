@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.7.0...lens-frontend-v0.7.1) (2026-06-17)
+
+
+### Bug Fixes
+
+* correctly extract latest metadata and chart events chronologically ([#26](https://github.com/nickdchristian/lens-frontend/issues/26)) ([d7ba37a](https://github.com/nickdchristian/lens-frontend/commit/d7ba37a81538582258fb370bf6999d85d62074c2))
+
 ## [0.7.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.6.0...lens-frontend-v0.7.0) (2026-06-17)
 
 ### Features
