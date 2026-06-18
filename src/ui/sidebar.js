@@ -6,7 +6,8 @@ function eventMatchesSearch(e, q) {
   if (!q) return true;
 
   if (e.repository?.toLowerCase().includes(q)) return true;
-  if (e.artifact_version?.toLowerCase().includes(q)) return true;
+  if (e.artifact?.name?.toLowerCase().includes(q)) return true;
+  if (e.artifact?.version?.toLowerCase().includes(q)) return true;
 
   const searchDict = (dict) =>
     Object.entries(dict ?? {}).some(
@@ -181,34 +182,65 @@ export function renderSidebar() {
   } else if (state.appMode === "artifacts") {
     if (groupControl) groupControl.style.display = "none";
 
-    const artifacts = new Set();
+    const artifactsByName = {};
     filteredEvents.forEach((e) => {
-      if (e.artifact_version) artifacts.add(e.artifact_version);
+      if (e.artifact && e.artifact.name && e.artifact.version) {
+        if (!artifactsByName[e.artifact.name]) {
+          artifactsByName[e.artifact.name] = new Set();
+        }
+        artifactsByName[e.artifact.name].add(e.artifact.version);
+      }
     });
 
     template = html`
-      ${Array.from(artifacts)
+      ${Object.keys(artifactsByName)
         .sort()
-        .map((art) => {
-          if (!state.currentArtifact && !firstItemSet) {
-            state.currentArtifact = art;
-            firstItemSet = true;
-          }
-          const isActive = state.currentArtifact === art;
-          const onClick = () => {
-            state.currentArtifact = art;
-            state.currentRepo = null;
-            state.currentGroupVal = null;
-            state.currentPage = 1;
-          };
+        .map((artName) => {
           return html`
             <li>
-              <button
-                class="nav-item ${isActive ? "active" : ""}"
-                @click=${onClick}
+              <div
+                class="group-header"
+                style="width: 100%; text-align: left; border: none; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;"
               >
-                ${art}
-              </button>
+                ${artName}
+              </div>
+              <ul class="nested-list">
+                ${Array.from(artifactsByName[artName])
+                  .sort()
+                  .map((artVersion) => {
+                    const isActive =
+                      state.currentArtifact?.name === artName &&
+                      state.currentArtifact?.version === artVersion;
+
+                    if (!state.currentArtifact && !firstItemSet) {
+                      state.currentArtifact = {
+                        name: artName,
+                        version: artVersion,
+                      };
+                      firstItemSet = true;
+                    }
+
+                    const onClick = () => {
+                      state.currentArtifact = {
+                        name: artName,
+                        version: artVersion,
+                      };
+                      state.currentRepo = null;
+                      state.currentGroupVal = null;
+                      state.currentPage = 1;
+                    };
+                    return html`
+                      <li>
+                        <button
+                          class="nav-item ${isActive ? "active" : ""}"
+                          @click=${onClick}
+                        >
+                          ${artVersion}
+                        </button>
+                      </li>
+                    `;
+                  })}
+              </ul>
             </li>
           `;
         })}

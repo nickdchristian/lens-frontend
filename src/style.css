@@ -483,7 +483,6 @@ details[open] summary .chevron {
   position: relative;
 }
 
-
 .nested-list .nav-item {
   padding-left: var(--space-6);
 }
@@ -1220,4 +1219,3 @@ input:checked + .slider:before {
   font-size: 0.9rem;
   color: var(--text-muted);
 }
-
