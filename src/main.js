@@ -17,6 +17,7 @@ import { fetchEvents } from "./api/client.js";
 import { applyTheme } from "./ui/theme.js";
 import { initDOM } from "./ui/dom.js";
 import { initTabs, initControls } from "./ui/controls.js";
+import { initRouter } from "./state/router.js";
 import { renderSidebar } from "./ui/sidebar.js";
 import { renderDashboard } from "./ui/dashboard.js";
 import { renderArtifactTrace } from "./ui/artifacts.js";
@@ -34,6 +35,7 @@ export async function init() {
   initDOM();
   applyTheme(state.isDarkMode);
   initTabs();
+  initRouter();
 
   subscribe(() => {
     renderSidebar();

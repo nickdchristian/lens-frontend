@@ -67,10 +67,16 @@ export function initDOM() {
   DOM.saveSettings = document.getElementById("save-settings");
   DOM.themeSelect = document.getElementById("theme-select");
   DOM.apiHostInput = document.getElementById("api-host-input");
+  DOM.timeRangeSelect = document.getElementById("time-range-select");
 
   DOM.dataTableHead = document.getElementById("data-table-head");
   DOM.dataTableBody = document.getElementById("data-table-body");
   DOM.paginationControls = document.getElementById("pagination-controls");
+
+  DOM.chartModal = document.getElementById("chart-modal");
+  DOM.closeChartModalBtn = document.getElementById("close-chart-modal-btn");
+  DOM.modalChartTitle = document.getElementById("modal-chart-title");
+  DOM.expandedChartCanvas = document.getElementById("expanded-chart-canvas");
 
   DOM.sidebarNavRepo = document.getElementById("sidebar-nav-dashboard");
   DOM.sidebarNavArtifacts = document.getElementById("sidebar-nav-artifacts");
