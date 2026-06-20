@@ -1,0 +1,106 @@
+/* DESIGN TOKENS */
+:root {
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* Typography */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.1);
+
+  /* Layout */
+  --sidebar-width: 280px;
+
+  /* Primitives */
+  --blue-500: #2563eb;
+  --blue-400: #60a5fa;
+  --gold-500: #f59e0b;
+  --gold-400: #fbbf24;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-500: #6b7280;
+  --gray-900: #111827;
+  --white: #ffffff;
+}
+
+:root {
+  --bg-color: #f6f8fa;
+  --sidebar-bg: var(--white);
+  --text-primary: var(--gray-900);
+  --text-secondary: var(--gray-500);
+  --border-color: var(--gray-200);
+  --hover-bg: var(--gray-100);
+  --card-bg: var(--white);
+  --details-bg: var(--gray-50);
+
+  /* Semantic Theme (Light) */
+  --theme-primary: var(--blue-500);
+  --theme-accent: var(--gold-500);
+
+  /* Accent Colors */
+  --accent-1: #3b82f6;
+  --accent-2: #10b981;
+  --accent-3: #8b5cf6;
+  --accent-4: #f43f5e;
+  --accent-5: #f59e0b;
+  --accent-6: #0ea5e9;
+  --accent-7: #d946ef;
+  --accent-8: #84cc16;
+  --accent-9: #ef4444;
+  --accent-10: #6366f1;
+}
+
+[data-theme="dark"] {
+  --bg-color: #121212;
+  --sidebar-bg: #1e1e1e;
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a0a0;
+  --border-color: #333333;
+  --hover-bg: #2a2a2a;
+  --card-bg: #1e1e1e;
+  --details-bg: #1a1a1a;
+
+  --theme-primary: var(--blue-400);
+  --theme-accent: var(--gold-400);
+
+  --accent-1: #60a5fa;
+  --accent-2: #34d399;
+  --accent-3: #a78bfa;
+  --accent-4: #fb7185;
+  --accent-5: #fbbf24;
+  --accent-6: #38bdf8;
+  --accent-7: #e879f9;
+  --accent-8: #a3e635;
+  --accent-9: #f87171;
+  --accent-10: #818cf8;
+
+  color-scheme: dark;
+}

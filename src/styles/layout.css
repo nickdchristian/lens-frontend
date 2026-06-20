@@ -1,0 +1,91 @@
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  padding-top: 64px;
+}
+
+/* TOP BAR */
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background-color: var(--bg-color);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: stretch;
+  z-index: 1000;
+}
+
+.top-bar-left {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-6);
+}
+
+.top-bar-left h1 {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.top-bar-right {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 var(--space-6);
+  gap: var(--space-6);
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: var(--sidebar-width);
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 64px;
+  height: calc(100vh - 64px);
+}
+
+.sidebar-nav {
+  padding: var(--space-4) var(--space-4);
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.sidebar-controls {
+  margin-bottom: var(--space-1);
+}
+
+/* MAIN CONTENT */
+.content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  padding: var(--space-12) var(--space-16);
+}
+
+.content-header {
+  margin-bottom: var(--space-8);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--space-4);
+}
+
+.content-header h2 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-medium);
+  letter-spacing: -0.02em;
+}
+
+.content-header p {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-8);
+}
