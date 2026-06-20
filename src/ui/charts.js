@@ -1,4 +1,5 @@
 import Chart from "chart.js/auto";
+import "chartjs-adapter-date-fns";
 import { html, render } from "lit";
 import { state } from "../state/store.js";
 import {
@@ -9,12 +10,17 @@ import {
   getAccentColor,
 } from "./theme.js";
 import { renderArtifactTrace } from "./artifacts.js";
+import { groupEventsByRepository, getTopRepositoriesForMetric } from "../utils/data-processing.js";
+import { fetchAggregatedMetrics } from "../api/client.js";
+import { getChartConfig, getChartScales, colorMix } from "./chart-config.js";
+import { DOM } from "./dom.js";
 
 export function renderOverview(events, isSpecificView) {
   const metadataSection = document.getElementById("metadata-section");
   const tagsList = document.getElementById("current-tags");
   const customDataList = document.getElementById("current-custom-data");
   const chartsGrid = document.getElementById("dynamic-charts");
+  const kpiGrid = document.getElementById("kpi-grid");
 
   state.activeChartInstances.forEach((c) => {
     try {
@@ -26,6 +32,7 @@ export function renderOverview(events, isSpecificView) {
   state.activeChartInstances = [];
 
   if (chartsGrid) render(html``, chartsGrid);
+  if (kpiGrid) render(html``, kpiGrid);
   if (tagsList) render(html``, tagsList);
   if (customDataList) render(html``, customDataList);
 
@@ -35,22 +42,34 @@ export function renderOverview(events, isSpecificView) {
   if (state.currentArtifact) {
     if (metadataSection) metadataSection.style.display = "none";
     if (overviewCharts) overviewCharts.style.display = "none";
-    if (timelineContainer) timelineContainer.style.display = "block";
+    if (timelineContainer) timelineContainer.style.display = "flex";
     renderArtifactTrace(state.currentArtifact);
     return;
   } else {
     if (overviewCharts) overviewCharts.style.display = "block";
     if (timelineContainer) timelineContainer.style.display = "none";
+    const telemetryHeader = document.getElementById("telemetry-header");
+    if (telemetryHeader) {
+      telemetryHeader.style.display = "flex";
+      const h3 = telemetryHeader.querySelector("h3");
+      if (h3) h3.textContent = "Telemetry";
+    }
   }
 
-  if (events.length === 0) return;
+  if (events.length === 0) {
+    if (chartsGrid) {
+      render(
+        html`<div style="grid-column: 1/-1; text-align: center; padding: var(--space-8); color: var(--text-secondary);">
+          No telemetry data found for the selected time period. Try expanding your search.
+        </div>`,
+        chartsGrid
+      );
+    }
+    return;
+  }
 
-  const uniqueReposMap = {};
-  events.forEach((e) => {
-    if (!uniqueReposMap[e.repository]) uniqueReposMap[e.repository] = [];
-    uniqueReposMap[e.repository].push(e);
-  });
-  const uniqueRepos = Object.keys(uniqueReposMap).sort();
+  const uniqueReposMap = groupEventsByRepository(events);
+  let uniqueRepos = Object.keys(uniqueReposMap).sort();
 
   if (isSpecificView && metadataSection && tagsList && customDataList) {
     metadataSection.style.display = "block";
@@ -60,13 +79,8 @@ export function renderOverview(events, isSpecificView) {
         render(html`<li><span class="metadata-key">None</span></li>`, el);
         return;
       }
-
       const items = Object.entries(dataObj).map(
-        ([k, v]) =>
-          html`<li>
-            <span class="metadata-key">${k}</span
-            ><span class="metadata-val">${v}</span>
-          </li>`
+        ([k, v]) => html`<li><span class="metadata-key">${k}</span><span class="metadata-val">${v}</span></li>`
       );
       render(items, el);
     };
@@ -82,21 +96,18 @@ export function renderOverview(events, isSpecificView) {
       uniqueRepos.forEach((repo) => {
         const repoEvents = uniqueReposMap[repo];
         const latest = repoEvents[0];
-
         const latestTags = latest.tags ?? {};
         const latestData = latest.custom_data ?? {};
 
-        if (!intersectedTags) {
-          intersectedTags = { ...latestTags };
-        } else {
+        if (!intersectedTags) intersectedTags = { ...latestTags };
+        else {
           Object.keys(intersectedTags).forEach((k) => {
             if (latestTags[k] !== intersectedTags[k]) delete intersectedTags[k];
           });
         }
 
-        if (!intersectedData) {
-          intersectedData = { ...latestData };
-        } else {
+        if (!intersectedData) intersectedData = { ...latestData };
+        else {
           Object.keys(intersectedData).forEach((k) => {
             if (latestData[k] !== intersectedData[k]) delete intersectedData[k];
           });
@@ -118,67 +129,82 @@ export function renderOverview(events, isSpecificView) {
   });
 
   if (Chart.defaults.font) {
-    Chart.defaults.font.family = "'DM Sans', sans-serif";
+    Chart.defaults.font.family = "'Inter', 'DM Sans', sans-serif";
     Chart.defaults.color = getTextColor();
   } else if (Chart.defaults.global) {
-    Chart.defaults.global.defaultFontFamily = "'DM Sans', sans-serif";
+    Chart.defaults.global.defaultFontFamily = "'Inter', 'DM Sans', sans-serif";
     Chart.defaults.global.defaultFontColor = getTextColor();
   }
 
-  let maxEvents = 0;
-  uniqueRepos.forEach((repo) => {
-    const repoEventCount = Math.min(100, uniqueReposMap[repo].length);
-    if (repoEventCount > maxEvents) maxEvents = repoEventCount;
-  });
-
-  const labels = Array.from({ length: maxEvents }, (_, i) => `#${i + 1}`);
-
+  // Render Chart HTML Cards
   if (chartsGrid) {
     const chartCards = Array.from(numericKeys).map((key, index) => {
       return html`
         <div class="chart-card">
-          <h3>${key.replace(/_/g, " ")}</h3>
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <h3>${key.replace(/_/g, " ")}</h3>
+            ${!state.currentRepo
+              ? html`<span style="font-size: 0.75rem; background: var(--bg-secondary); padding: 2px 8px; border-radius: 12px; color: var(--text-secondary);">Top 5 Repos</span>`
+              : ""}
+          </div>
           <canvas id="chart-${index}"></canvas>
         </div>
       `;
     });
-
     render(chartCards, chartsGrid);
   }
 
-  Array.from(numericKeys).forEach((key, index) => {
-    const datasets = [];
+  // Assign global colors to repos
+  const repoColorMap = {};
+  uniqueRepos.forEach((repo, idx) => {
+    repoColorMap[repo] = idx;
+  });
 
-    uniqueRepos.forEach((repo, rIdx) => {
-      const repoEvents = uniqueReposMap[repo].slice(0, 100).reverse();
-      const data = repoEvents.map((e) => e.metrics?.[key] ?? null);
+  Array.from(numericKeys).forEach(async (key, index) => {
+    const config = getChartConfig(key);
+    const buildDatasets = async (limit) => {
+      const reposForKey = getTopRepositoriesForMetric(uniqueReposMap, key, !state.currentRepo, limit);
 
-      if (!data.every((v) => v === null)) {
-        const color = state.currentRepo
-          ? getActiveSingleLine()
-          : getAccentColor(rIdx % 10);
-        datasets.push({
-          label: repo.split("/").pop() || repo,
-          data: data,
-          borderColor: state.currentRepo
-            ? getActiveSingleLine()
-            : getNeutralLine(),
-          backgroundColor: color,
-          pointBackgroundColor: color,
-          pointBorderColor: getGridLine(),
-          pointBorderWidth: 1,
-          borderWidth: 2,
-          hoverBorderWidth: 3,
-          hoverBorderColor: color,
-          tension: 0.3,
-          pointRadius: 0,
-          pointHoverRadius: 4,
-          hitRadius: 10,
-          fill: false,
-          order: 1,
-        });
-      }
-    });
+      const promises = reposForKey.map(async (repo) => {
+        const rIdx = repoColorMap[repo];
+        const isSum = config.type === "bar";
+        
+        const data = await fetchAggregatedMetrics(repo, key, state.timePeriod, isSum);
+
+        if (data && data.length > 0) {
+          const isSingleRepo = !!state.currentRepo;
+          const color = isSingleRepo ? getActiveSingleLine() : getAccentColor(rIdx % 10);
+          const bgColor = isSingleRepo ? color : getAccentColor(rIdx % 10);
+          
+          return {
+            label: repo.split("/").pop() || repo,
+            data: data,
+            clip: false,
+            parsing: false,
+            normalized: true,
+            borderColor: isSingleRepo && config.type !== "bar" ? getActiveSingleLine() : color,
+            backgroundColor: config.fill ? colorMix(bgColor, 0.2) : bgColor,
+            pointBackgroundColor: bgColor,
+            pointBorderColor: getGridLine(),
+            pointBorderWidth: 1,
+            borderWidth: config.type === "bar" ? 0 : 2,
+            hoverBorderWidth: config.type === "bar" ? 0 : 3,
+            tension: config.type === "bar" ? 0 : 0.4,
+            pointRadius: config.type === "bar" ? 0 : 2,
+            pointHoverRadius: 5,
+            hitRadius: 10,
+            fill: config.fill,
+            order: 1,
+          };
+        }
+        return null;
+      });
+      
+      const results = await Promise.all(promises);
+      return results.filter((r) => r !== null);
+    };
+
+    const datasets = await buildDatasets(5);
 
     if (datasets.length === 0) return;
 
@@ -186,68 +212,83 @@ export function renderOverview(events, isSpecificView) {
     if (!canvas) return;
 
     const ctx = canvas.getContext("2d");
+    const scales = getChartScales(state.timePeriod, config);
+
     const chart = new Chart(ctx, {
-      type: "line",
-      data: { labels: labels, datasets: datasets },
+      type: config.type,
+      data: { datasets: datasets },
       options: {
+        animation: false,
+        layout: { padding: { top: !state.currentRepo ? 0 : 10 } },
         responsive: true,
-        interaction: { intersect: false, mode: "index" },
-        hover: {
-          mode: "index",
-          intersect: false,
-        },
+        interaction: { intersect: false, mode: "x" },
+        hover: { mode: "x", intersect: false },
         plugins: {
           tooltip: {
             enabled: true,
-            mode: "index",
+            mode: "x",
             intersect: false,
+            caretPadding: 15,
           },
           legend: {
             display: !state.currentRepo,
-            position: "top",
+            position: "bottom",
+            align: "center",
+            padding: { top: 20 },
             labels: {
               usePointStyle: true,
               pointStyle: "circle",
               boxWidth: 8,
               boxHeight: 8,
-              sort: (a, b) => a.datasetIndex - b.datasetIndex,
-            },
-            onHover: function (e, legendItem, legend) {
-              const ci = legend.chart;
-              const hoveredDatasetIndex = legendItem.datasetIndex;
-              ci.data.datasets.forEach((d, i) => {
-                if (i === hoveredDatasetIndex) {
-                  d.borderWidth = 3;
-                  d.borderColor = d.backgroundColor;
-                  d.order = 0;
-                } else {
-                  d.borderWidth = 1;
-                  d.borderColor = getNeutralLine();
-                  d.order = 1;
-                }
-              });
-              ci.update();
-            },
-            onLeave: function (e, legendItem, legend) {
-              const ci = legend.chart;
-              ci.data.datasets.forEach((d) => {
-                d.borderWidth = 2;
-                d.borderColor = state.currentRepo
-                  ? getActiveSingleLine()
-                  : getNeutralLine();
-                d.order = 1;
-              });
-              ci.update();
             },
           },
         },
-        scales: {
-          x: { display: false },
-          y: {
-            beginAtZero: true,
-            grid: { color: getGridLine() },
-            border: { display: false },
-          },
+        scales: scales,
+        onClick: async (e) => {
+          if (!DOM.chartModal) return;
+          if (DOM.modalChartTitle) DOM.modalChartTitle.textContent = key;
+          DOM.chartModal.style.display = "flex";
+          
+          if (window.expandedChartInstance) {
+            window.expandedChartInstance.destroy();
+          }
+          
+          const expandedCtx = DOM.expandedChartCanvas.getContext("2d");
+          const expandedScales = getChartScales(state.timePeriod, config);
+          const expandedDatasets = await buildDatasets(20);
+          
+          window.expandedChartInstance = new Chart(expandedCtx, {
+            type: config.type,
+            data: { datasets: expandedDatasets },
+            options: {
+              animation: false,
+              maintainAspectRatio: false,
+              responsive: true,
+              interaction: { intersect: false, mode: "x" },
+              hover: { mode: "x", intersect: false },
+              plugins: {
+                tooltip: {
+                  enabled: true,
+                  mode: "x",
+                  intersect: false,
+                  caretPadding: 15,
+                },
+                legend: {
+                  display: true,
+                  position: "bottom",
+                  align: "center",
+                  padding: { top: 20 },
+                  labels: {
+                    usePointStyle: true,
+                    pointStyle: "circle",
+                    boxWidth: 8,
+                    boxHeight: 8,
+                  },
+                },
+              },
+              scales: expandedScales,
+            },
+          });
         },
       },
     });

@@ -23,8 +23,8 @@ export async function fetchEvents(repository = "lens") {
       const baseUrl = apiHost ? apiHost.replace(/\/$/, "") : "";
 
       const url = repository
-        ? `${baseUrl}/api/v1/events/${repository}?limit=100&t=` + Date.now()
-        : `${baseUrl}/api/v1/events?limit=1000&t=` + Date.now();
+        ? `${baseUrl}/api/v1/events/${repository}?limit=1000&t=` + Date.now()
+        : `${baseUrl}/api/v1/events?limit=3000&t=` + Date.now();
 
       const response = await fetch(url, { signal });
 
@@ -55,5 +55,27 @@ export async function fetchEvents(repository = "lens") {
 
       await sleep(delays[attempt - 1]);
     }
+  }
+}
+
+export async function fetchAggregatedMetrics(repository, metricKey, timePeriod, isSum) {
+  try {
+    const apiHost = localStorage.getItem("apiHost") || "";
+    const baseUrl = apiHost ? apiHost.replace(/\/$/, "") : "";
+    const url = `${baseUrl}/api/v1/events/${repository}/metrics/aggregated?metric_key=${metricKey}&time_period=${timePeriod}&is_sum=${isSum}`;
+
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+    const data = await res.json();
+    return data.data || [];
+  } catch (error) {
+    logger.error("Error fetching aggregated metrics:", {
+      error: error.message,
+    });
+    return [];
   }
 }
