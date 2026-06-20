@@ -1,5 +1,5 @@
 import { html, render } from "lit";
-import { state } from "../state/store.js";
+import { state, actions } from "../state/store.js";
 import { DOM } from "./dom.js";
 
 function eventMatchesSearch(e, q) {
@@ -65,7 +65,6 @@ export function renderSidebar() {
   if (!sidebarList) return;
 
   const filteredEvents = getFilteredEventsForSidebar();
-  let firstItemSet = false;
   let template;
 
   if (state.appMode === "repositories") {
@@ -79,17 +78,14 @@ export function renderSidebar() {
         ${Array.from(repos)
           .sort()
           .map((repo) => {
-            if (!state.currentRepo && !state.currentGroupVal && !firstItemSet) {
-              state.currentRepo = repo;
-              firstItemSet = true;
-            }
             const isActive = state.currentRepo === repo;
             const label = repo.split("/").pop() || repo;
             const onClick = () => {
-              state.currentRepo = repo;
-              state.currentGroupVal = null;
-              state.currentArtifact = null;
-              state.currentPage = 1;
+              actions.setCurrentRepo(repo);
+              actions.setCurrentGroupVal(null);
+              actions.setCurrentArtifact(null);
+              actions.setCurrentPage(1);
+              DOM.overviewBtn?.click();
             };
             return html`
               <li>
@@ -126,19 +122,14 @@ export function renderSidebar() {
         ${Object.keys(groups)
           .sort()
           .map((gVal) => {
-            if (!state.currentRepo && !state.currentGroupVal && !firstItemSet) {
-              state.currentGroupVal = gVal;
-              state.currentRepo = null; // Auto-select group aggregate view
-              firstItemSet = true;
-            }
-
             const isGroupActive =
               state.currentGroupVal === gVal && !state.currentRepo;
             const onGroupClick = () => {
-              state.currentGroupVal = gVal;
-              state.currentRepo = null;
-              state.currentArtifact = null;
-              state.currentPage = 1;
+              actions.setCurrentGroupVal(gVal);
+              actions.setCurrentRepo(null);
+              actions.setCurrentArtifact(null);
+              actions.setCurrentPage(1);
+              DOM.overviewBtn?.click();
             };
 
             return html`
@@ -157,10 +148,11 @@ export function renderSidebar() {
                       const isActive = state.currentRepo === repo;
                       const label = repo.split("/").pop() || repo;
                       const onRepoClick = () => {
-                        state.currentRepo = repo;
-                        state.currentGroupVal = gVal;
-                        state.currentArtifact = null;
-                        state.currentPage = 1;
+                        actions.setCurrentRepo(repo);
+                        actions.setCurrentGroupVal(gVal);
+                        actions.setCurrentArtifact(null);
+                        actions.setCurrentPage(1);
+                        DOM.overviewBtn?.click();
                       };
                       return html`
                         <li>
@@ -207,27 +199,21 @@ export function renderSidebar() {
               <ul class="nested-list">
                 ${Array.from(artifactsByName[artName])
                   .sort()
+                  .reverse()
                   .map((artVersion) => {
                     const isActive =
                       state.currentArtifact?.name === artName &&
                       state.currentArtifact?.version === artVersion;
 
-                    if (!state.currentArtifact && !firstItemSet) {
-                      state.currentArtifact = {
-                        name: artName,
-                        version: artVersion,
-                      };
-                      firstItemSet = true;
-                    }
-
                     const onClick = () => {
-                      state.currentArtifact = {
+                      actions.setCurrentArtifact({
                         name: artName,
                         version: artVersion,
-                      };
-                      state.currentRepo = null;
-                      state.currentGroupVal = null;
-                      state.currentPage = 1;
+                      });
+                      actions.setCurrentRepo(null);
+                      actions.setCurrentGroupVal(null);
+                      actions.setCurrentPage(1);
+                      DOM.overviewBtn?.click();
                     };
                     return html`
                       <li>

@@ -1,8 +1,8 @@
 import { html, render } from "lit";
-import { state } from "../state/store.js";
+import { state, actions } from "../state/store.js";
 import { DOM } from "./dom.js";
 import { renderOverview } from "./charts.js";
-import { formatDictionary } from "../utils/formatters.js";
+import { formatDictionary, formatDate } from "../utils/formatters.js";
 
 function historyEventMatchesSearch(e, q) {
   if (!q) return true;
@@ -53,9 +53,23 @@ export function renderDashboard() {
     });
   }
 
-  let dashboardEvents = state.allEvents;
-  let title =
-    state.appMode === "repositories" ? "All Repositories" : "All Artifacts";
+  const now = new Date();
+  let cutoffDate = new Date();
+  if (state.timePeriod === "day") cutoffDate.setDate(now.getDate() - 1);
+  else if (state.timePeriod === "week") cutoffDate.setDate(now.getDate() - 7);
+  else if (state.timePeriod === "month") cutoffDate.setMonth(now.getMonth() - 1);
+  else if (state.timePeriod === "year") cutoffDate.setFullYear(now.getFullYear() - 1);
+
+  document.querySelectorAll(".segment-btn").forEach((btn) => {
+    if (btn.dataset.period === state.timePeriod) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  });
+
+  let dashboardEvents = state.appMode === "artifacts" ? state.allEvents : state.allEvents.filter(e => new Date(e.timestamp) >= cutoffDate);
+  let title = state.appMode === "repositories" ? "All Repositories" : "All Artifacts";
   let subtitle = "Overview of all aggregated data";
 
   if (state.appMode === "artifacts") {
@@ -65,7 +79,7 @@ export function renderDashboard() {
           e.artifact?.name === state.currentArtifact.name &&
           e.artifact?.version === state.currentArtifact.version
       );
-      title = `Artifact: ${state.currentArtifact.name} (${state.currentArtifact.version})`;
+      title = `${state.currentArtifact.name} (${state.currentArtifact.version})`;
       subtitle = `Tracing artifacts across all repositories`;
     }
   } else {
@@ -111,10 +125,14 @@ export function renderDashboard() {
   DOM.viewTitle.textContent = title;
   DOM.viewSubtitle.textContent = subtitle;
 
-  renderOverview(
-    dashboardEvents,
-    !!state.currentRepo || !!state.currentGroupVal
-  );
+  if (state.appMode === "artifacts" && !state.currentArtifact) {
+    renderRecentArtifactsTable(dashboardEvents);
+  } else {
+    renderOverview(
+      dashboardEvents,
+      !!state.currentRepo || !!state.currentGroupVal
+    );
+  }
 
   let gridEvents = dashboardEvents;
   if (state.historySearchQuery) {
@@ -124,6 +142,88 @@ export function renderDashboard() {
   }
 
   renderDataGrid(gridEvents);
+}
+
+export function renderRecentArtifactsTable(events) {
+  const chartsGrid = document.getElementById("dynamic-charts");
+  if (!chartsGrid) return;
+
+  const metadataSection = document.getElementById("metadata-section");
+  if (metadataSection) metadataSection.style.display = "none";
+
+  const overviewCharts = document.getElementById("overview-charts");
+  const timelineContainer = document.getElementById("artifact-trace-container");
+  
+  if (overviewCharts) overviewCharts.style.display = "block";
+  if (timelineContainer) timelineContainer.style.display = "none";
+
+  const telemetryHeader = document.getElementById("telemetry-header");
+  if (telemetryHeader) {
+    telemetryHeader.style.display = "none";
+  }
+
+  const artifactEvents = events.filter((e) => e.artifact && e.artifact.name && e.artifact.version);
+
+  const artifactMap = new Map();
+  artifactEvents.forEach((e) => {
+    const key = `${e.artifact.name}@${e.artifact.version}`;
+    if (!artifactMap.has(key)) {
+      artifactMap.set(key, {
+        repo: e.repository,
+        name: e.artifact.name,
+        version: e.artifact.version,
+        latestEvent: e
+      });
+    } else {
+      const existing = artifactMap.get(key);
+      if (new Date(e.timestamp) > new Date(existing.latestEvent.timestamp)) {
+        existing.latestEvent = e;
+      }
+    }
+  });
+
+  const recentArtifacts = Array.from(artifactMap.values())
+    .sort((a, b) => new Date(b.latestEvent.timestamp) - new Date(a.latestEvent.timestamp))
+    .slice(0, 50);
+
+  const rows = recentArtifacts.map((art) => {
+    const dateStr = formatDate(art.latestEvent.timestamp);
+    const stage = art.latestEvent.workflow_name || "Unknown";
+
+    return html`
+      <tr style="cursor: pointer;" class="hoverable-row" @click=${() => {
+        actions.setCurrentArtifact({ name: art.name, version: art.version });
+        DOM.overviewBtn?.click();
+      }}>
+        <td>${art.repo}</td>
+        <td style="font-weight: var(--font-semibold);">${art.name}</td>
+        <td><span class="tag-pill">${art.version}</span></td>
+        <td>${stage.replace(/_/g, " ")}</td>
+        <td style="color: var(--text-secondary);">${dateStr}</td>
+      </tr>
+    `;
+  });
+
+  const template = html`
+    <div class="table-container" style="grid-column: 1 / -1; margin-top: var(--space-4);">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="text-align: left;">Repository</th>
+            <th style="text-align: left;">Artifact</th>
+            <th style="text-align: left;">Version</th>
+            <th style="text-align: left;">Latest Stage</th>
+            <th style="text-align: left;">Last Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.length > 0 ? rows : html`<tr><td colspan="5" style="text-align: center; padding: var(--space-8); color: var(--text-secondary);">No artifacts found.</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  render(template, chartsGrid);
 }
 
 export function renderDataGrid(events) {

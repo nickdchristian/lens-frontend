@@ -1,5 +1,5 @@
 import { html, render } from "lit";
-import { state } from "../state/store.js";
+import { state, actions } from "../state/store.js";
 import { DOM } from "./dom.js";
 import { debounce } from "../utils/formatters.js";
 import { applyTheme } from "./theme.js";
@@ -21,18 +21,27 @@ export function initTabs() {
     });
   });
 
+  const timeBtns = document.querySelectorAll(".segment-btn");
+  timeBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const period = btn.dataset.period;
+      if (state.timePeriod === period) return;
+      
+      actions.setTimePeriod(period);
+    });
+  });
+
   if (logoBtn) {
     logoBtn.addEventListener("click", () => {
+      const repoBtn = document.querySelector('.top-nav-btn[data-mode="repositories"]');
+      if (repoBtn && !repoBtn.classList.contains("active")) {
+        repoBtn.click();
+      }
+      
       state.currentRepo = null;
       state.currentGroupVal = null;
       state.currentArtifact = null;
       state.currentPage = 1;
-
-      if (state.appMode === "settings") {
-        document
-          .querySelector('.top-nav-btn[data-mode="repositories"]')
-          ?.click();
-      }
 
       DOM.overviewBtn?.click();
     });
@@ -43,7 +52,14 @@ export function initTabs() {
     btn.addEventListener("click", () => {
       const mode = btn.dataset.mode;
 
-      if (state.appMode === mode) return;
+      if (state.appMode === mode) {
+        state.currentRepo = null;
+        state.currentGroupVal = null;
+        state.currentArtifact = null;
+        state.currentPage = 1;
+        DOM.overviewBtn?.click();
+        return;
+      }
 
       state.appMode = mode;
       state.currentRepo = null;
@@ -89,6 +105,7 @@ export function initControls() {
         state.currentGroupVal = null;
         state.currentRepo = null;
         state.currentArtifact = null;
+        DOM.overviewBtn?.click();
       }
     };
 
@@ -169,10 +186,18 @@ export function initControls() {
     DOM.settingsBtn.addEventListener("click", () => {
       if (state.appMode !== "settings") {
         state.appMode = "settings";
-        const storedTheme = localStorage.getItem("theme") || "system";
-        if (DOM.themeSelect) DOM.themeSelect.value = storedTheme;
-        if (DOM.apiHostInput)
-          DOM.apiHostInput.value = localStorage.getItem("apiHost") || "";
+        
+        if (DOM.themeSelect) {
+          const isDark = state.isDarkMode;
+          DOM.themeSelect.value = isDark ? "dark" : "light";
+        }
+        if (DOM.apiHostInput && state.apiHost) {
+          DOM.apiHostInput.value = state.apiHost;
+        }
+        if (DOM.timeRangeSelect) {
+          const defaultTime = localStorage.getItem("defaultTimePeriod") || "month";
+          DOM.timeRangeSelect.value = defaultTime;
+        }
 
         document
           .querySelectorAll(".top-nav-btn")
@@ -204,8 +229,15 @@ export function initControls() {
       } else {
         localStorage.removeItem("apiHost");
       }
+      
+      if (DOM.timeRangeSelect) {
+        const tr = DOM.timeRangeSelect.value;
+        localStorage.setItem("defaultTimePeriod", tr);
+        actions.setTimePeriod(tr);
+      }
 
-      if (window.lensApiHost !== host) {
+      const currentHost = window.lensApiHost || "";
+      if (currentHost !== host) {
         window.location.reload();
       } else {
         document
@@ -223,12 +255,28 @@ export function initControls() {
       settingsTabs.forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
 
-      document.querySelectorAll(".settings-group").forEach((g) => {
-        g.style.display = "none";
+      const settingsGroups = document.querySelectorAll(".settings-group");
+      settingsGroups.forEach((group) => {
+        group.style.display = group.id === `settings-group-${targetId}` ? "block" : "none";
       });
-
-      const targetGroup = document.getElementById(`settings-group-${targetId}`);
-      if (targetGroup) targetGroup.style.display = "block";
     });
   });
+
+  if (DOM.closeChartModalBtn) {
+    DOM.closeChartModalBtn.addEventListener("click", () => {
+      DOM.chartModal.style.display = "none";
+      if (window.expandedChartInstance) {
+        window.expandedChartInstance.destroy();
+        window.expandedChartInstance = null;
+      }
+    });
+  }
+
+  if (DOM.chartModal) {
+    DOM.chartModal.addEventListener("click", (e) => {
+      if (e.target === DOM.chartModal) {
+        DOM.closeChartModalBtn.click();
+      }
+    });
+  }
 }

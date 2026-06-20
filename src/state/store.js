@@ -42,9 +42,16 @@ const initialState = {
   currentGroupKey: null,
   currentGroupVal: null,
   currentArtifact: null,
+  activeTraceIndex: null,
   activeChartInstances: [],
   currentPage: 1,
   eventsPerPage: 25,
+  timePeriod: (() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("defaultTimePeriod") || "month";
+    }
+    return "month";
+  })(),
 };
 
 export const state = new Proxy(initialState, {
@@ -56,3 +63,18 @@ export const state = new Proxy(initialState, {
     return true;
   },
 });
+
+export const actions = {
+  setTimePeriod: (period) => { state.timePeriod = period; },
+  setAppMode: (mode) => { state.appMode = mode; },
+  setCurrentRepo: (repo) => { state.currentRepo = repo; },
+  setCurrentArtifact: (artifact) => { state.currentArtifact = artifact; },
+  setActiveTraceIndex: (index) => { state.activeTraceIndex = index; },
+  setSearchQuery: (query) => { state.searchQuery = query; },
+  setGroupBy: (group) => { state.groupBy = group; },
+  setTheme: (isDark) => { state.isDarkMode = isDark; },
+  setEvents: (events) => { state.allEvents = events; },
+  setCurrentGroupVal: (val) => { state.currentGroupVal = val; },
+  setCurrentGroupKey: (key) => { state.currentGroupKey = key; },
+  setCurrentPage: (page) => { state.currentPage = page; }
+};
