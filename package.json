@@ -22,7 +22,7 @@
     "jsdom": "^29.1.1",
     "msw": "^2.14.6",
     "prettier": "^3.8.4",
-    "vite": "^8.0.12",
+    "vite": "^8.1.0",
     "vitest": "^4.1.9"
   },
   "dependencies": {
