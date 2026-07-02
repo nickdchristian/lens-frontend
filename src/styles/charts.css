@@ -86,9 +86,15 @@
   gap: var(--space-1);
 }
 
-.kpi-trend.positive { color: var(--accent-2); }
-.kpi-trend.negative { color: var(--accent-9); }
-.kpi-trend.neutral { color: var(--text-secondary); }
+.kpi-trend.positive {
+  color: var(--accent-2);
+}
+.kpi-trend.negative {
+  color: var(--accent-9);
+}
+.kpi-trend.neutral {
+  color: var(--text-secondary);
+}
 
 .dynamic-charts-grid {
   display: grid;

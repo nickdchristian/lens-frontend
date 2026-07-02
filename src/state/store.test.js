@@ -1,53 +1,71 @@
-import { expect, test, describe } from "vitest";
-
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { state, subscribe, unsubscribe } from "./store.js";
 
-describe("Global State", () => {
-  test("should initialize with default values", () => {
-    expect(state).toBeDefined();
-    expect(state.currentTab).toBe("dashboard");
-    expect(state.allEvents).toEqual([]);
-    expect(state.selectedRepository).toBe("All");
-    expect(state.searchQuery).toBe("");
-    expect(state.groupBy).toBe("None");
-    expect(state.historySearchQuery).toBe("");
+describe("store", () => {
+  beforeEach(() => {
+    // Reset state to defaults before each test
+    state.appMode = "repositories";
+    state.currentRepo = null;
+    state.currentGroupKey = null;
+    state.currentGroupVal = null;
+    state.currentArtifact = null;
+    state.searchQuery = "";
+    state.historySearchQuery = "";
+    state.currentPage = 1;
+    state.timePeriod = "month";
+    state.isDarkMode = false;
   });
 
-  test("should be mutable", () => {
-    state.currentTab = "settings";
-    expect(state.currentTab).toBe("settings");
+  it("should update state properties via actions", () => {
+    state.appMode = "artifacts";
+    expect(state.appMode).toBe("artifacts");
 
-    state.allEvents = [{ id: 1, name: "test" }];
-    expect(state.allEvents.length).toBe(1);
-    expect(state.allEvents[0].id).toBe(1);
-  });
-});
+    state.currentRepo = "my-repo";
+    expect(state.currentRepo).toBe("my-repo");
 
-describe("State Reactivity", () => {
-  test("should notify subscribers when state changes", async () => {
-    return new Promise((resolve) => {
-      const callback = (newState) => {
-        expect(newState.searchQuery).toBe("test query");
-        unsubscribe(callback);
-        resolve();
-      };
-      subscribe(callback);
-      state.searchQuery = "test query";
-    });
+    state.timePeriod = "week";
+    expect(state.timePeriod).toBe("week");
+
+    state.searchQuery = "error";
+    expect(state.searchQuery).toBe("error");
   });
 
-  test("should unsubscribe properly", async () => {
-    let callCount = 0;
-    const callback = () => {
-      callCount++;
-    };
+  it("should support subscribing to state changes", async () => {
+    const callback = vi.fn();
+    subscribe(callback);
+
+    state.appMode = "artifacts";
+
+    // Wait for the requestAnimationFrame to process notifications
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
+    expect(callback).toHaveBeenCalled();
+    unsubscribe(callback);
+  });
+
+  it("should not notify unsubscribed callbacks", async () => {
+    const callback = vi.fn();
     subscribe(callback);
     unsubscribe(callback);
 
-    state.groupBy = "Repository";
+    state.appMode = "settings";
 
-    // Wait a tick for the rAF to potentially fire
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(callCount).toBe(0);
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
+    expect(callback).not.toHaveBeenCalled();
+  });
+
+  it("should only schedule one notification per frame", async () => {
+    const callback = vi.fn();
+    subscribe(callback);
+
+    state.appMode = "artifacts";
+    state.currentRepo = "test";
+    state.searchQuery = "foo";
+
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+
+    expect(callback).toHaveBeenCalledTimes(1);
+    unsubscribe(callback);
   });
 });

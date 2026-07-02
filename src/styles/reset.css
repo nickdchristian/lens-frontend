@@ -50,3 +50,16 @@ button:active {
   transform: none !important;
   margin: 0 !important;
 }
+
+/* Lit Light DOM Web Components should NOT use display: contents.
+   They will be given proper display properties in layout.css */
+lens-app,
+lens-sidebar,
+lens-dashboard,
+lens-settings,
+lens-overview-charts,
+lens-chart-card,
+lens-history-table {
+  box-sizing: border-box;
+  display: block;
+}

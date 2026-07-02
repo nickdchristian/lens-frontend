@@ -24,8 +24,15 @@ export const formatDictionary = (data) => {
   if (!data || Object.keys(data).length === 0)
     return html`<span class="empty-state">None</span>`;
 
+  const filteredEntries = Object.entries(data).filter(
+    ([key]) => !key.startsWith("_lens_")
+  );
+
+  if (filteredEntries.length === 0)
+    return html`<span class="empty-state">None</span>`;
+
   return html`<dl class="data-list">
-    ${Object.entries(data).map(([key, val]) => {
+    ${filteredEntries.map(([key, val]) => {
       const displayVal = typeof val === "object" ? JSON.stringify(val) : val;
       return html`<div class="data-row">
         <dt>${key.replace(/_/g, " ")}</dt>

@@ -1,4 +1,3 @@
-
 export function groupEventsByRepository(events) {
   const uniqueReposMap = {};
   events.forEach((e) => {
@@ -8,10 +7,16 @@ export function groupEventsByRepository(events) {
   return uniqueReposMap;
 }
 
-export function getTopRepositoriesForMetric(uniqueReposMap, metricKey, isGlobalView, limit = 5) {
+export function getTopRepositoriesForMetric(
+  uniqueReposMap,
+  metricKey,
+  isGlobalView,
+  limit = 5
+) {
   let reposForKey = Object.keys(uniqueReposMap).filter((repo) => {
     return uniqueReposMap[repo].some(
-      (e) => e.metrics?.[metricKey] !== undefined && e.metrics?.[metricKey] !== null
+      (e) =>
+        e.metrics?.[metricKey] !== undefined && e.metrics?.[metricKey] !== null
     );
   });
 
@@ -19,10 +24,14 @@ export function getTopRepositoriesForMetric(uniqueReposMap, metricKey, isGlobalV
     reposForKey = reposForKey
       .sort((a, b) => {
         const aCount = uniqueReposMap[a].filter(
-          (e) => e.metrics?.[metricKey] !== undefined && e.metrics?.[metricKey] !== null
+          (e) =>
+            e.metrics?.[metricKey] !== undefined &&
+            e.metrics?.[metricKey] !== null
         ).length;
         const bCount = uniqueReposMap[b].filter(
-          (e) => e.metrics?.[metricKey] !== undefined && e.metrics?.[metricKey] !== null
+          (e) =>
+            e.metrics?.[metricKey] !== undefined &&
+            e.metrics?.[metricKey] !== null
         ).length;
         return bCount - aCount;
       })
@@ -30,4 +39,3 @@ export function getTopRepositoriesForMetric(uniqueReposMap, metricKey, isGlobalV
   }
   return reposForKey;
 }
-

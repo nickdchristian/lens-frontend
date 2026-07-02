@@ -63,6 +63,16 @@ tr.grid-row-master.expanded td {
   padding: var(--space-4) 0 var(--space-4) var(--space-4);
 }
 
+.chevron {
+  display: inline-block;
+  transition: transform 0.2s ease;
+  font-size: 10px;
+}
+
+.chevron.expanded {
+  transform: rotate(90deg);
+}
+
 .actions-cell {
   text-align: right;
 }
@@ -337,7 +347,8 @@ tr.grid-row-master.expanded td {
   justify-content: space-between;
   gap: var(--space-2);
   padding: var(--space-1) 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--border-color) 50%, transparent);
 }
 
 .data-row:last-child {
