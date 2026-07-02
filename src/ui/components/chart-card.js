@@ -115,6 +115,29 @@ export class LensChartCard extends LitElement {
           font-style: italic;
           font-size: 0.9rem;
         }
+        .custom-legend {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.75rem;
+          margin-top: 0.75rem;
+          justify-content: center;
+        }
+        .legend-item {
+          display: flex;
+          align-items: center;
+          gap: 0.35rem;
+          font-size: 0.75rem;
+          color: var(--text-secondary);
+        }
+        .legend-color {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+        .legend-label {
+          word-break: break-word;
+        }
         canvas {
           max-height: 250px;
           width: 100%;
@@ -166,72 +189,119 @@ export class LensChartCard extends LitElement {
 
     this.config = getChartConfig(this.metricKey, null, null);
     this.scales = getChartScales(state.timePeriod, this.config);
-    this.layoutPaddingTop = !state.currentRepo ? 0 : 10;
-    this.hideLegend = !!state.currentRepo;
-
     const isSingleRepo = !!state.currentRepo && state.currentRepo !== "All";
-    let reposForKey;
-    const repoColorMap = {};
+    let queries = []; // Array of { repo, artifact, label, colorIdx }
+    this.hideLegend = isSingleRepo; // Default for single repo, will update if multiple artifacts found
 
     if (isSingleRepo) {
-      reposForKey = [state.currentRepo];
-    } else {
-      let eventsToGroup = state.globalEvents || [];
-
-      if (state.currentGroupKey && state.currentGroupVal) {
-        eventsToGroup = eventsToGroup.filter(
-          (e) =>
-            e.tags && e.tags[state.currentGroupKey] === state.currentGroupVal
-        );
-      } else if (state.currentArtifact) {
-        eventsToGroup = eventsToGroup.filter(
-          (e) =>
-            e.artifact &&
-            e.artifact.name === state.currentArtifact.name &&
-            (!state.currentArtifact.version ||
-              e.artifact.version === state.currentArtifact.version)
-        );
-      }
-
-      const uniqueReposMap = groupEventsByRepository(eventsToGroup);
-      reposForKey = getTopRepositoriesForMetric(
-        uniqueReposMap,
-        this.metricKey,
-        true,
-        5
+      let eventsToGroup = this.events || [];
+      eventsToGroup = eventsToGroup.filter(
+        (e) => e.metrics && e.metrics[this.metricKey] !== undefined
       );
 
-      const uniqueRepos = Object.keys(uniqueReposMap).sort();
-      uniqueRepos.forEach((repo, idx) => {
-        repoColorMap[repo] = idx;
+      const uniqueArtifacts = new Set();
+      eventsToGroup.forEach((e) => {
+        if (e.artifact && e.artifact.name) uniqueArtifacts.add(e.artifact.name);
+      });
+
+      if (uniqueArtifacts.size > 1) {
+        this.hideLegend = false;
+        Array.from(uniqueArtifacts).sort().forEach((art, idx) => {
+          queries.push({
+            repo: state.currentRepo,
+            artifact: art,
+            label: art,
+            colorIdx: idx
+          });
+        });
+      } else {
+        queries.push({
+          repo: state.currentRepo,
+          artifact: null,
+          label: state.currentRepo,
+          colorIdx: 0
+        });
+      }
+    } else {
+      let eventsToGroup = this.events || [];
+
+      // To differentiate artifacts on global view:
+      const uniqueTargetsMap = {};
+      eventsToGroup.forEach(e => {
+         const targetKey = e.artifact && e.artifact.name ? `${e.repository}::${e.artifact.name}` : e.repository;
+         if (!uniqueTargetsMap[targetKey]) uniqueTargetsMap[targetKey] = [];
+         uniqueTargetsMap[targetKey].push(e);
+      });
+
+      let targetsForKey = Object.keys(uniqueTargetsMap).filter((key) => {
+        return uniqueTargetsMap[key].some(
+          (e) =>
+            e.metrics?.[this.metricKey] !== undefined && e.metrics?.[this.metricKey] !== null
+        );
+      });
+
+      if (targetsForKey.length > 10) {
+        targetsForKey = targetsForKey.sort((a, b) => {
+          const aCount = uniqueTargetsMap[a].filter(e => e.metrics?.[this.metricKey] !== undefined).length;
+          const bCount = uniqueTargetsMap[b].filter(e => e.metrics?.[this.metricKey] !== undefined).length;
+          return bCount - aCount;
+        }).slice(0, 10);
+      }
+
+      const uniqueTargets = Object.keys(uniqueTargetsMap).sort();
+      const targetColorMap = {};
+      uniqueTargets.forEach((target, idx) => {
+        targetColorMap[target] = idx;
+      });
+
+      targetsForKey.forEach((target) => {
+        let repo, artifact, label;
+        if (target.includes("::")) {
+           [repo, artifact] = target.split("::");
+           // It's part of a monorepo or an artifact deployment
+           label = `${repo.split("/").pop()} (${artifact})`;
+        } else {
+           repo = target;
+           artifact = null;
+           label = repo.split("/").pop() || repo;
+        }
+
+        queries.push({
+          repo: repo,
+          artifact: artifact,
+          label: label,
+          colorIdx: targetColorMap[target]
+        });
       });
     }
 
-    const promises = reposForKey.map(async (repo) => {
-      const rIdx = repoColorMap[repo];
+    const promises = queries.map(async (query) => {
+      const rIdx = query.colorIdx;
       const isSum = this.config.type === "bar";
 
       const data = await fetchAggregatedMetrics(
-        repo,
+        query.repo,
         this.metricKey,
         state.timePeriod,
-        isSum
+        isSum,
+        query.artifact
       );
 
       if (data && data.length > 0) {
         const tzOffset = new Date().getTimezoneOffset() * 60000;
-        const shiftedData = data.map((d) => ({ x: d.x + tzOffset, y: d.y }));
+        const shiftedData = data
+          .map((d) => ({ x: d.x + tzOffset, y: d.y }))
+          .filter((d) => d.x >= this.scales.x.min && d.x <= this.scales.x.max);
 
-        const isSingleRepo = !!state.currentRepo;
-        const color = isSingleRepo
+        const isMultipleLines = queries.length > 1;
+        const color = !isMultipleLines
           ? getActiveSingleLine()
           : getAccentColor(rIdx % 10);
-        const bgColor = isSingleRepo ? color : getAccentColor(rIdx % 10);
+        const bgColor = !isMultipleLines ? color : getAccentColor(rIdx % 10);
 
         return {
-          label: repo.split("/").pop() || repo,
+          label: query.label,
           data: shiftedData,
-          clip: false,
           parsing: false,
           normalized: true,
           borderColor: color,
@@ -260,7 +330,7 @@ export class LensChartCard extends LitElement {
                 ? 6
                 : 5,
           hitRadius: 10,
-          fill: this.config.fill,
+          fill: isMultipleLines ? false : this.config.fill,
           order: 1,
         };
       }
@@ -287,6 +357,7 @@ export class LensChartCard extends LitElement {
           config: this.config,
           datasets: this.datasets,
           scales: this.scales,
+          isGlobalView: this.isGlobalView,
         },
         bubbles: true,
         composed: true,
@@ -314,10 +385,12 @@ export class LensChartCard extends LitElement {
       this.chartInstance = null;
     }
 
+    const compactDatasets = this.datasets.slice(0, 5);
+
     const ctx = canvas.getContext("2d");
     this.chartInstance = new Chart(ctx, {
       type: this.config.type,
-      data: { datasets: this.datasets },
+      data: { datasets: compactDatasets },
       options: {
         animation: false,
         layout: { padding: { top: this.layoutPaddingTop } },
@@ -332,14 +405,7 @@ export class LensChartCard extends LitElement {
             intersect: false,
           },
           legend: {
-            display: !this.hideLegend,
-            position: "bottom",
-            labels: {
-              usePointStyle: true,
-              boxWidth: 8,
-              padding: 20,
-              color: Chart.defaults.color,
-            },
+            display: false,
           },
         },
         scales: this.scales,
@@ -363,7 +429,7 @@ export class LensChartCard extends LitElement {
           <h3>${title}</h3>
           ${
             this.isGlobalView
-              ? html`<span class="top-tag">Top 5 Repos</span>`
+              ? html`<span class="top-tag">Top 5</span>`
               : ""
           }
         </div>
@@ -371,6 +437,7 @@ export class LensChartCard extends LitElement {
           const hasData =
             this.datasets &&
             this.datasets.some((ds) => ds.data && ds.data.length > 0);
+          const compactDatasets = this.datasets ? this.datasets.slice(0, 5) : [];
           return hasData
             ? html`<div style="height: 250px; position: relative;">
                 <canvas
@@ -378,7 +445,18 @@ export class LensChartCard extends LitElement {
                   role="img"
                   aria-label="${title || "Data chart"}"
                 ></canvas>
-              </div>`
+              </div>
+              ${!this.hideLegend && compactDatasets.length > 0 ? html`
+                <div class="custom-legend">
+                  ${compactDatasets.map(ds => html`
+                    <div class="legend-item" title="${ds.label}">
+                      <span class="legend-color" style="background-color: ${ds.pointBackgroundColor || ds.borderColor}"></span>
+                      <span class="legend-label">${ds.label}</span>
+                    </div>
+                  `)}
+                </div>
+              ` : ""}
+              `
             : html`<div class="empty-message">${this.emptyMessage}</div>`;
         })()}
       </div>

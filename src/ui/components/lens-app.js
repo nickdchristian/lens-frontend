@@ -322,16 +322,7 @@ export class LensApp extends LitElement {
                   caretPadding: 15,
                 },
                 legend: {
-                  display: true,
-                  position: "bottom",
-                  align: "center",
-                  padding: { top: 20 },
-                  labels: {
-                    usePointStyle: true,
-                    pointStyle: "circle",
-                    boxWidth: 8,
-                    boxHeight: 8,
-                  },
+                  display: false,
                 },
               },
               scales: scales,
@@ -458,8 +449,9 @@ export class LensApp extends LitElement {
               >
                 <div class="modal-content modal-content-inner">
                   <div class="modal-header">
-                    <h3 id="modal-chart-title">
+                    <h3 id="modal-chart-title" style="display: flex; align-items: center; gap: 0.75rem;">
                       ${this.expandedChartConfig.metricKey.replace(/_/g, " ")}
+                      ${this.expandedChartConfig.isGlobalView ? html`<span style="font-size: 0.8rem; font-weight: normal; color: var(--text-secondary); background: var(--bg-secondary); padding: 2px 8px; border-radius: 12px;">Showing Top 10</span>` : ""}
                     </h3>
                     <button
                       type="button"
@@ -485,6 +477,16 @@ export class LensApp extends LitElement {
                   <div class="modal-body">
                     <canvas id="expanded-chart-canvas"></canvas>
                   </div>
+                  ${this.expandedChartConfig.datasets && this.expandedChartConfig.datasets.length > 0 ? html`
+                  <div class="custom-legend" style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-top: 1.5rem;">
+                    ${this.expandedChartConfig.datasets.map(ds => html`
+                      <div class="legend-item" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);" title="${ds.label}">
+                        <span class="legend-color" style="width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; background-color: ${ds.pointBackgroundColor || ds.borderColor}"></span>
+                        <span class="legend-label" style="word-break: break-word;">${ds.label}</span>
+                      </div>
+                    `)}
+                  </div>
+                  ` : ""}
                 </div>
               </div>
             `
