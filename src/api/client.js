@@ -244,9 +244,10 @@ export async function fetchAggregatedMetrics(
   repository,
   metricKey,
   timePeriod,
-  isSum
+  isSum,
+  artifactName = null
 ) {
-  const requestKey = `${repository}-${metricKey}-${timePeriod}-${isSum}`;
+  const requestKey = `${repository}-${metricKey}-${timePeriod}-${isSum}-${artifactName}`;
   if (inflightAggregationRequests.has(requestKey)) {
     return inflightAggregationRequests.get(requestKey);
   }
@@ -259,7 +260,10 @@ export async function fetchAggregatedMetrics(
     while (attempt < maxAttempts) {
       try {
         const baseUrl = getSafeBaseUrl();
-        const url = `${baseUrl}/api/v1/events/${encodeURIComponent(repository)}/metrics/aggregated?metric_key=${encodeURIComponent(metricKey)}&time_period=${encodeURIComponent(timePeriod)}&is_sum=${isSum}`;
+        let url = `${baseUrl}/api/v1/events/${encodeURIComponent(repository)}/metrics/aggregated?metric_key=${encodeURIComponent(metricKey)}&time_period=${encodeURIComponent(timePeriod)}&is_sum=${isSum}`;
+        if (artifactName) {
+          url += `&artifact_name=${encodeURIComponent(artifactName)}`;
+        }
 
         const res = await fetch(url);
 

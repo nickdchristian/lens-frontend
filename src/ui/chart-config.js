@@ -25,12 +25,19 @@ export function getChartConfig(
     max = 100;
   } else if (key.includes("count") || key.includes("frequency")) {
     type = "bar";
+    stacked = true;
   }
 
-  const supportedCartesianTypes = ["line", "bar", "scatter", "bubble", "area"];
+  const supportedCartesianTypes = ["line", "bar", "scatter", "area"];
 
   if (finalType) {
-    if (supportedCartesianTypes.includes(finalType)) {
+    if (
+      ["pie", "doughnut", "radar", "polarArea", "bubble"].includes(finalType)
+    ) {
+      console.warn(
+        `[Lens] Chart type '${finalType}' violates SWD principles. Falling back to default.`
+      );
+    } else if (supportedCartesianTypes.includes(finalType)) {
       if (finalType === "area") {
         type = "line";
         fill = true;

@@ -28,7 +28,17 @@ export class LensOverviewCharts extends LitElement {
       "change_failure_rate",
     ];
 
-    let keys = state.availableMetrics || [];
+    let keys = [];
+
+    if (this.events && this.events.length > 0) {
+      const keysSet = new Set();
+      this.events.forEach((e) => {
+        if (e.metrics) {
+          Object.keys(e.metrics).forEach((k) => keysSet.add(k));
+        }
+      });
+      keys = Array.from(keysSet);
+    }
 
     if (isArtifactRepoView) {
       keys = keys.filter((k) => doraMetrics.includes(k));

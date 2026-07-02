@@ -74,7 +74,20 @@ export class LensDashboard extends LitElement {
     else if (this.timePeriod === "year")
       cutoffDate.setFullYear(now.getFullYear() - 1);
 
-    const activeEvents = this.events || [];
+    // FIX: Always use globalEvents for charts to ensure we have a large enough dataset,
+    // rather than the paginated this.events (which only has 25 items).
+    let activeEvents = this.globalEvents || [];
+
+    // Apply scope filtering locally
+    if (this.currentRepo) {
+      activeEvents = activeEvents.filter(
+        (e) => e.repository === this.currentRepo
+      );
+    } else if (this.currentGroupKey && this.currentGroupVal) {
+      activeEvents = activeEvents.filter(
+        (e) => e.tags && e.tags[this.currentGroupKey] === this.currentGroupVal
+      );
+    }
 
     let dashboardEvents =
       this.appMode === "artifacts"
@@ -121,8 +134,24 @@ export class LensDashboard extends LitElement {
       if (isLocalPagination) {
         const start = (this.currentPage - 1) * this.eventsPerPage;
         const end = start + this.eventsPerPage;
-        paginatedEvents = dashboardEvents.slice(start, end);
-        hasNextPage = dashboardEvents.length > end;
+        let filteredEvents = dashboardEvents;
+
+        if (this.historySearchQuery) {
+          const sq = this.historySearchQuery.toLowerCase();
+          filteredEvents = filteredEvents.filter(
+            (e) =>
+              (e.repository && e.repository.toLowerCase().includes(sq)) ||
+              (e.commit_sha && e.commit_sha.toLowerCase().includes(sq)) ||
+              (e.workflow_name && e.workflow_name.toLowerCase().includes(sq)) ||
+              (e.tags &&
+                Object.values(e.tags).some((v) =>
+                  String(v).toLowerCase().includes(sq)
+                ))
+          );
+        }
+
+        paginatedEvents = filteredEvents.slice(start, end);
+        hasNextPage = filteredEvents.length > end;
       } else {
         paginatedEvents = dashboardEvents;
         hasNextPage = this.events && this.events.length === this.eventsPerPage;
@@ -287,7 +316,7 @@ export class LensDashboard extends LitElement {
                 this.currentArtifact &&
                 this.currentArtifact.version
               ? html`<lens-artifact-trace
-                  .events=${this.events}
+                  .events=${this.globalEvents}
                   .artifactObj=${this.currentArtifact}
                   .activeTraceIndex=${this.activeTraceIndex}
                   @node-click=${(e) => {

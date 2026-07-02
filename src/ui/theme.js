@@ -21,7 +21,7 @@ export function getFadedLine() {
   return state.isDarkMode ? "#222222" : "#e5e5e5";
 }
 export function getGridLine() {
-  return state.isDarkMode ? "#333333" : "#eaeaea";
+  return state.isDarkMode ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.05)";
 }
 export function getTextColor() {
   return state.isDarkMode ? "#a0a0a0" : "#737373";
