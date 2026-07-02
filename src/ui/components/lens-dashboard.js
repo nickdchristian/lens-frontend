@@ -135,17 +135,21 @@ export class LensDashboard extends LitElement {
         const start = (this.currentPage - 1) * this.eventsPerPage;
         const end = start + this.eventsPerPage;
         let filteredEvents = dashboardEvents;
-        
+
         if (this.historySearchQuery) {
           const sq = this.historySearchQuery.toLowerCase();
-          filteredEvents = filteredEvents.filter(e => 
-            (e.repository && e.repository.toLowerCase().includes(sq)) ||
-            (e.commit_sha && e.commit_sha.toLowerCase().includes(sq)) ||
-            (e.workflow_name && e.workflow_name.toLowerCase().includes(sq)) ||
-            (e.tags && Object.values(e.tags).some(v => String(v).toLowerCase().includes(sq)))
+          filteredEvents = filteredEvents.filter(
+            (e) =>
+              (e.repository && e.repository.toLowerCase().includes(sq)) ||
+              (e.commit_sha && e.commit_sha.toLowerCase().includes(sq)) ||
+              (e.workflow_name && e.workflow_name.toLowerCase().includes(sq)) ||
+              (e.tags &&
+                Object.values(e.tags).some((v) =>
+                  String(v).toLowerCase().includes(sq)
+                ))
           );
         }
-        
+
         paginatedEvents = filteredEvents.slice(start, end);
         hasNextPage = filteredEvents.length > end;
       } else {
