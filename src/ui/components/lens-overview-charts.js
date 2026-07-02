@@ -93,24 +93,26 @@ export class LensOverviewCharts extends LitElement {
       </div>
 
       <div class="dynamic-charts-grid" id="dynamic-charts">
-        ${!this.events || this.events.length === 0
-          ? this.isLoading
-            ? html`<div style="min-height: 300px; grid-column: 1/-1;"></div>`
-            : html`<div
-                style="grid-column: 1/-1; text-align: center; padding: var(--space-8); color: var(--text-secondary);"
-              >
-                No telemetry data found for the selected time period. Try
-                expanding your search.
-              </div>`
-          : keys.map(
-              (key) => html`
-                <lens-chart-card
-                  .metricKey=${key}
-                  .events=${this.events}
-                  .isGlobalView=${isGlobalView}
-                ></lens-chart-card>
-              `
-            )}
+        ${
+          !this.events || this.events.length === 0
+            ? this.isLoading
+              ? html`<div style="min-height: 300px; grid-column: 1/-1;"></div>`
+              : html`<div
+                  style="grid-column: 1/-1; text-align: center; padding: var(--space-8); color: var(--text-secondary);"
+                >
+                  No telemetry data found for the selected time period. Try
+                  expanding your search.
+                </div>`
+            : keys.map(
+                (key) => html`
+                  <lens-chart-card
+                    .metricKey=${key}
+                    .events=${this.events}
+                    .isGlobalView=${isGlobalView}
+                  ></lens-chart-card>
+                `
+              )
+        }
       </div>
     `;
   }

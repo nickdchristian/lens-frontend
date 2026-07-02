@@ -427,63 +427,69 @@ export class LensApp extends LitElement {
         </div>
       </header>
       <div class="app-layout">
-        ${state.isSidebarOpen
-          ? html`<div
-              class="sidebar-backdrop show"
-              id="sidebar-backdrop"
-              @click=${() => (state.isSidebarOpen = false)}
-            ></div>`
-          : ""}
+        ${
+          state.isSidebarOpen
+            ? html`<div
+                class="sidebar-backdrop show"
+                id="sidebar-backdrop"
+                @click=${() => (state.isSidebarOpen = false)}
+              ></div>`
+            : ""
+        }
         <lens-sidebar></lens-sidebar>
-        ${state.appMode === "settings"
-          ? html`<lens-settings id="lens-settings"></lens-settings>`
-          : html`<lens-dashboard></lens-dashboard>`}
+        ${
+          state.appMode === "settings"
+            ? html`<lens-settings id="lens-settings"></lens-settings>`
+            : html`<lens-dashboard></lens-dashboard>`
+        }
       </div>
 
       <!-- Chart Modal -->
-      ${this.expandedChartConfig
-        ? html`
-            <div
-              id="chart-modal"
-              class="modal-overlay"
-              style="display: flex;"
-              @click=${(e) => {
-                if (e.target.id === "chart-modal") this._closeChartModal();
-              }}
-            >
-              <div class="modal-content modal-content-inner">
-                <div class="modal-header">
-                  <h3 id="modal-chart-title">
-                    ${this.expandedChartConfig.metricKey.replace(/_/g, " ")}
-                  </h3>
-                  <button
-                    type="button"
-                    id="close-chart-modal-btn"
-                    class="icon-btn modal-close-btn"
-                    @click=${this._closeChartModal}
-                  >
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+      ${
+        this.expandedChartConfig
+          ? html`
+              <div
+                id="chart-modal"
+                class="modal-overlay"
+                style="display: flex;"
+                @click=${(e) => {
+                  if (e.target.id === "chart-modal") this._closeChartModal();
+                }}
+              >
+                <div class="modal-content modal-content-inner">
+                  <div class="modal-header">
+                    <h3 id="modal-chart-title">
+                      ${this.expandedChartConfig.metricKey.replace(/_/g, " ")}
+                    </h3>
+                    <button
+                      type="button"
+                      id="close-chart-modal-btn"
+                      class="icon-btn modal-close-btn"
+                      @click=${this._closeChartModal}
                     >
-                      <line x1="18" y1="6" x2="6" y2="18"></line>
-                      <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                  </button>
-                </div>
-                <div class="modal-body">
-                  <canvas id="expanded-chart-canvas"></canvas>
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <canvas id="expanded-chart-canvas"></canvas>
+                  </div>
                 </div>
               </div>
-            </div>
-          `
-        : ""}
+            `
+          : ""
+      }
     `;
   }
 

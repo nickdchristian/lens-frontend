@@ -355,15 +355,17 @@ export class LensChartCard extends LitElement {
       <div
         class="chart-card"
         @click=${this._handleClick}
-        style="${this.chartLoading
-          ? "opacity: 0.5; pointer-events: none;"
-          : ""}"
+        style="${
+          this.chartLoading ? "opacity: 0.5; pointer-events: none;" : ""
+        }"
       >
         <div class="header">
           <h3>${title}</h3>
-          ${this.isGlobalView
-            ? html`<span class="top-tag">Top 5 Repos</span>`
-            : ""}
+          ${
+            this.isGlobalView
+              ? html`<span class="top-tag">Top 5 Repos</span>`
+              : ""
+          }
         </div>
         ${(() => {
           const hasData =

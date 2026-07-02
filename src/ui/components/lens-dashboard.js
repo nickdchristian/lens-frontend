@@ -170,58 +170,60 @@ export class LensDashboard extends LitElement {
             style="display: flex; align-items: center; gap: var(--space-3); margin: 0;"
           >
             ${title}
-            ${this.isLoading
-              ? html`
-                  <div
-                    class="lens-loader"
-                    aria-busy="true"
-                    role="status"
-                    aria-label="Loading telemetry data"
-                  >
-                    <div class="bar bar1"></div>
-                    <div class="bar bar2"></div>
-                    <div class="bar bar3"></div>
-                    <style>
-                      .lens-loader {
-                        display: flex;
-                        align-items: flex-end;
-                        justify-content: center;
-                        gap: 4px;
-                        height: 20px;
-                      }
-                      .lens-loader .bar {
-                        width: 4px;
-                        height: 100%;
-                        background-color: var(--color-primary);
-                        border-radius: 2px;
-                        animation: telemetry-bounce 1s
-                          cubic-bezier(0.4, 0, 0.2, 1) infinite;
-                        transform-origin: bottom;
-                      }
-                      .lens-loader .bar1 {
-                        animation-delay: 0s;
-                      }
-                      .lens-loader .bar2 {
-                        animation-delay: 0.2s;
-                      }
-                      .lens-loader .bar3 {
-                        animation-delay: 0.4s;
-                      }
-                      @keyframes telemetry-bounce {
-                        0%,
-                        100% {
-                          transform: scaleY(0.3);
-                          opacity: 0.4;
+            ${
+              this.isLoading
+                ? html`
+                    <div
+                      class="lens-loader"
+                      aria-busy="true"
+                      role="status"
+                      aria-label="Loading telemetry data"
+                    >
+                      <div class="bar bar1"></div>
+                      <div class="bar bar2"></div>
+                      <div class="bar bar3"></div>
+                      <style>
+                        .lens-loader {
+                          display: flex;
+                          align-items: flex-end;
+                          justify-content: center;
+                          gap: 4px;
+                          height: 20px;
                         }
-                        50% {
-                          transform: scaleY(1);
-                          opacity: 1;
+                        .lens-loader .bar {
+                          width: 4px;
+                          height: 100%;
+                          background-color: var(--color-primary);
+                          border-radius: 2px;
+                          animation: telemetry-bounce 1s
+                            cubic-bezier(0.4, 0, 0.2, 1) infinite;
+                          transform-origin: bottom;
                         }
-                      }
-                    </style>
-                  </div>
-                `
-              : ""}
+                        .lens-loader .bar1 {
+                          animation-delay: 0s;
+                        }
+                        .lens-loader .bar2 {
+                          animation-delay: 0.2s;
+                        }
+                        .lens-loader .bar3 {
+                          animation-delay: 0.4s;
+                        }
+                        @keyframes telemetry-bounce {
+                          0%,
+                          100% {
+                            transform: scaleY(0.3);
+                            opacity: 0.4;
+                          }
+                          50% {
+                            transform: scaleY(1);
+                            opacity: 1;
+                          }
+                        }
+                      </style>
+                    </div>
+                  `
+                : ""
+            }
           </h2>
         </div>
 
@@ -262,59 +264,65 @@ export class LensDashboard extends LitElement {
       <div
         class="tab-content ${this.activeTab === "overview" ? "active" : ""}"
         role="tabpanel"
-        style="${isSettings || this.activeTab !== "overview"
-          ? "display: none;"
-          : ""} transition: opacity 0.3s ease; opacity: ${this.isLoading
-          ? "0.5"
-          : "1"}; pointer-events: ${this.isLoading ? "none" : "auto"};"
+        style="${
+          isSettings || this.activeTab !== "overview" ? "display: none;" : ""
+        } transition: opacity 0.3s ease; opacity: ${
+          this.isLoading ? "0.5" : "1"
+        }; pointer-events: ${this.isLoading ? "none" : "auto"};"
       >
-        ${metadata
-          ? html`<lens-metadata-panel
-              .metadata=${metadata}
-              .isLoading=${this.isLoading}
-            ></lens-metadata-panel>`
-          : ""}
-        ${this.appMode === "artifacts" && !this.currentArtifact
-          ? html`<lens-recent-artifacts
-              .events=${dashboardEvents}
-            ></lens-recent-artifacts>`
-          : this.appMode === "artifacts" &&
-              this.currentArtifact &&
-              this.currentArtifact.version
-            ? html`<lens-artifact-trace
-                .events=${this.events}
-                .artifactObj=${this.currentArtifact}
-                .activeTraceIndex=${this.activeTraceIndex}
-                @node-click=${(e) => {
-                  const index = e.detail.index;
-                  const isCurrentlyActive = this.activeTraceIndex === index;
-                  state.activeTraceIndex = isCurrentlyActive ? null : index;
-                }}
-              ></lens-artifact-trace>`
-            : html`<lens-overview-charts
-                .events=${dashboardEvents}
-                .timePeriod=${this.timePeriod}
-                .hasScope=${!!this.currentRepo || !!this.currentGroupVal}
+        ${
+          metadata
+            ? html`<lens-metadata-panel
+                .metadata=${metadata}
                 .isLoading=${this.isLoading}
-              >
-              </lens-overview-charts>`}
+              ></lens-metadata-panel>`
+            : ""
+        }
+        ${
+          this.appMode === "artifacts" && !this.currentArtifact
+            ? html`<lens-recent-artifacts
+                .events=${dashboardEvents}
+              ></lens-recent-artifacts>`
+            : this.appMode === "artifacts" &&
+                this.currentArtifact &&
+                this.currentArtifact.version
+              ? html`<lens-artifact-trace
+                  .events=${this.events}
+                  .artifactObj=${this.currentArtifact}
+                  .activeTraceIndex=${this.activeTraceIndex}
+                  @node-click=${(e) => {
+                    const index = e.detail.index;
+                    const isCurrentlyActive = this.activeTraceIndex === index;
+                    state.activeTraceIndex = isCurrentlyActive ? null : index;
+                  }}
+                ></lens-artifact-trace>`
+              : html`<lens-overview-charts
+                  .events=${dashboardEvents}
+                  .timePeriod=${this.timePeriod}
+                  .hasScope=${!!this.currentRepo || !!this.currentGroupVal}
+                  .isLoading=${this.isLoading}
+                >
+                </lens-overview-charts>`
+        }
       </div>
 
       <!-- HISTORY TAB -->
       <div
         class="tab-content ${this.activeTab === "history" ? "active" : ""}"
         role="tabpanel"
-        style="${isSettings || this.activeTab !== "history"
-          ? "display: none;"
-          : ""} transition: opacity 0.3s ease; opacity: ${this.isLoading
-          ? "0.5"
-          : "1"}; pointer-events: ${this.isLoading ? "none" : "auto"};"
+        style="${
+          isSettings || this.activeTab !== "history" ? "display: none;" : ""
+        } transition: opacity 0.3s ease; opacity: ${
+          this.isLoading ? "0.5" : "1"
+        }; pointer-events: ${this.isLoading ? "none" : "auto"};"
       >
         <lens-history-table
           .events=${paginatedEvents}
-          .columns=${this.appMode === "artifacts"
-            ? ["artifact", "repository", "workflow_name", "timestamp"]
-            : ["repository", "commit_sha", "workflow_name", "timestamp"]}
+          .columns=${
+            this.appMode === "artifacts"
+              ? ["artifact", "repository", "workflow_name", "timestamp"]
+              : ["repository", "commit_sha", "workflow_name", "timestamp"]
+          }
           .currentPage=${this.currentPage}
           .eventsPerPage=${this.eventsPerPage}
           .historySearchQuery=${this.historySearchQuery}

@@ -91,16 +91,18 @@ export class LensRecentArtifacts extends LitElement {
             </tr>
           </thead>
           <tbody>
-            ${rows.length > 0
-              ? rows
-              : html`<tr>
-                  <td
-                    colspan="5"
-                    style="text-align: center; padding: var(--space-8); color: var(--text-secondary);"
-                  >
-                    No artifacts found.
-                  </td>
-                </tr>`}
+            ${
+              rows.length > 0
+                ? rows
+                : html`<tr>
+                    <td
+                      colspan="5"
+                      style="text-align: center; padding: var(--space-8); color: var(--text-secondary);"
+                    >
+                      No artifacts found.
+                    </td>
+                  </tr>`
+            }
           </tbody>
         </table>
       </div>
