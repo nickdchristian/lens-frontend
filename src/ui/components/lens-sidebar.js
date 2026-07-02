@@ -209,10 +209,12 @@ export class LensSidebar extends LitElement {
               <li>
                 <a
                   href="/artifacts/${encodeURIComponent(artName)}"
-                  class="group-header ${this.currentArtifact?.name ===
-                    artName && !this.currentArtifact?.version
-                    ? "active"
-                    : ""}"
+                  class="group-header ${
+                    this.currentArtifact?.name === artName &&
+                    !this.currentArtifact?.version
+                      ? "active"
+                      : ""
+                  }"
                   style="display: block; text-decoration: none;"
                 >
                   ${String(artName).toUpperCase()}
@@ -277,9 +279,9 @@ export class LensSidebar extends LitElement {
       >
         <a
           href="/repositories"
-          class="top-nav-btn mobile-sidebar-btn ${!isArtifacts && !isSettings
-            ? "active"
-            : ""}"
+          class="top-nav-btn mobile-sidebar-btn ${
+            !isArtifacts && !isSettings ? "active" : ""
+          }"
           @click=${() => {
             state.isSidebarOpen = false;
           }}
@@ -349,9 +351,11 @@ export class LensSidebar extends LitElement {
                 aria-label="Group by criteria"
               >
                 <span class="dropdown-value"
-                  >${this.currentGroupKey
-                    ? `Group By: ${getDisplayGroup(this.currentGroupKey)}`
-                    : "Group By: None"}</span
+                  >${
+                    this.currentGroupKey
+                      ? `Group By: ${getDisplayGroup(this.currentGroupKey)}`
+                      : "Group By: None"
+                  }</span
                 >
                 <svg
                   class="dropdown-icon"
@@ -385,9 +389,9 @@ export class LensSidebar extends LitElement {
                     (key) => html`
                       <a
                         href="/group/${encodeURIComponent(key)}"
-                        class="dropdown-item ${this.currentGroupKey === key
-                          ? "active"
-                          : ""}"
+                        class="dropdown-item ${
+                          this.currentGroupKey === key ? "active" : ""
+                        }"
                         role="menuitem"
                         style="display: block; text-decoration: none;"
                         @click=${() => {
@@ -422,9 +426,9 @@ export class LensSidebar extends LitElement {
       <nav
         class="sidebar-nav"
         id="sidebar-nav-settings"
-        style="${!isSettings
-          ? "display: none;"
-          : ""} margin-top: var(--space-6)"
+        style="${
+          !isSettings ? "display: none;" : ""
+        } margin-top: var(--space-6)"
       >
         <div class="nav-section">
           <h4
@@ -436,9 +440,9 @@ export class LensSidebar extends LitElement {
             <li>
               <button
                 type="button"
-                class="nav-item ${state.settingsGroup === "appearance"
-                  ? "active"
-                  : ""}"
+                class="nav-item ${
+                  state.settingsGroup === "appearance" ? "active" : ""
+                }"
                 @click=${() => (state.settingsGroup = "appearance")}
               >
                 Appearance
@@ -447,9 +451,9 @@ export class LensSidebar extends LitElement {
             <li>
               <button
                 type="button"
-                class="nav-item ${state.settingsGroup === "system"
-                  ? "active"
-                  : ""}"
+                class="nav-item ${
+                  state.settingsGroup === "system" ? "active" : ""
+                }"
                 @click=${() => (state.settingsGroup = "system")}
               >
                 System

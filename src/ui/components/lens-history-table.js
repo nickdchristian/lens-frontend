@@ -116,37 +116,47 @@ export class LensHistoryTable extends LitElement {
         <td colspan="${this.columns.length + 1}">
           <div class="details-pane">
             <div class="details-grid">
-              ${artifactHtml
-                ? html`<div class="details-group">
-                    <h4>Artifact</h4>
-                    <dl class="data-list">${artifactHtml}</dl>
-                  </div>`
-                : ""}
-              ${metricsHtml
-                ? html`<div class="details-group">
-                    <h4>Metrics</h4>
-                    <dl class="data-list">${metricsHtml}</dl>
-                  </div>`
-                : ""}
-              ${customDataHtml
-                ? html`<div class="details-group">
-                    <h4>Custom Data</h4>
-                    <dl class="data-list">${customDataHtml}</dl>
-                  </div>`
-                : ""}
-              ${tagsHtml
-                ? html`<div class="details-group">
-                    <h4>Tags</h4>
-                    <dl class="data-list">${tagsHtml}</dl>
-                  </div>`
-                : ""}
-              ${noData
-                ? html`<div class="details-group">
-                    <p style="color: var(--text-secondary);">
-                      No additional metadata available.
-                    </p>
-                  </div>`
-                : ""}
+              ${
+                artifactHtml
+                  ? html`<div class="details-group">
+                      <h4>Artifact</h4>
+                      <dl class="data-list">${artifactHtml}</dl>
+                    </div>`
+                  : ""
+              }
+              ${
+                metricsHtml
+                  ? html`<div class="details-group">
+                      <h4>Metrics</h4>
+                      <dl class="data-list">${metricsHtml}</dl>
+                    </div>`
+                  : ""
+              }
+              ${
+                customDataHtml
+                  ? html`<div class="details-group">
+                      <h4>Custom Data</h4>
+                      <dl class="data-list">${customDataHtml}</dl>
+                    </div>`
+                  : ""
+              }
+              ${
+                tagsHtml
+                  ? html`<div class="details-group">
+                      <h4>Tags</h4>
+                      <dl class="data-list">${tagsHtml}</dl>
+                    </div>`
+                  : ""
+              }
+              ${
+                noData
+                  ? html`<div class="details-group">
+                      <p style="color: var(--text-secondary);">
+                        No additional metadata available.
+                      </p>
+                    </div>`
+                  : ""
+              }
             </div>
           </div>
         </td>
@@ -236,79 +246,81 @@ export class LensHistoryTable extends LitElement {
             </tr>
           </thead>
           <tbody id="data-table-body">
-            ${!this.events || this.events.length === 0
-              ? html`<tr>
-                  <td
-                    colspan="${this.columns.length + 1}"
-                    style="text-align: center; padding: 2rem;"
-                  >
-                    No events found
-                  </td>
-                </tr>`
-              : this.events.map((event, index) => {
-                  const isExpanded = this.expandedRowIndex === index;
-                  return html`
-                    <tr
-                      class="grid-row-master"
-                      tabindex="0"
-                      role="button"
-                      aria-expanded="${isExpanded}"
-                      @click=${() => this.toggleRow(index)}
-                      @keydown=${(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          this.toggleRow(index);
-                        }
-                      }}
+            ${
+              !this.events || this.events.length === 0
+                ? html`<tr>
+                    <td
+                      colspan="${this.columns.length + 1}"
+                      style="text-align: center; padding: 2rem;"
                     >
-                      <td style="text-align: center;">
-                        <span class="row-chevron"></span>
-                      </td>
-                      ${this.columns.map((col) => {
-                        let val = event[col] ?? "-";
-                        if (
-                          col === "commit_sha" &&
-                          typeof val === "string" &&
-                          val.length > 7
-                        ) {
-                          val = val.substring(0, 7);
-                        } else if (col === "timestamp") {
-                          val = formatDate(val);
-                        } else if (
-                          col === "workflow_name" &&
-                          typeof val === "string"
-                        ) {
-                          val = val.replace(/_/g, " ");
-                        }
+                      No events found
+                    </td>
+                  </tr>`
+                : this.events.map((event, index) => {
+                    const isExpanded = this.expandedRowIndex === index;
+                    return html`
+                      <tr
+                        class="grid-row-master"
+                        tabindex="0"
+                        role="button"
+                        aria-expanded="${isExpanded}"
+                        @click=${() => this.toggleRow(index)}
+                        @keydown=${(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            this.toggleRow(index);
+                          }
+                        }}
+                      >
+                        <td style="text-align: center;">
+                          <span class="row-chevron"></span>
+                        </td>
+                        ${this.columns.map((col) => {
+                          let val = event[col] ?? "-";
+                          if (
+                            col === "commit_sha" &&
+                            typeof val === "string" &&
+                            val.length > 7
+                          ) {
+                            val = val.substring(0, 7);
+                          } else if (col === "timestamp") {
+                            val = formatDate(val);
+                          } else if (
+                            col === "workflow_name" &&
+                            typeof val === "string"
+                          ) {
+                            val = val.replace(/_/g, " ");
+                          }
 
-                        let cellContent = val;
-                        if (col === "commit_sha" && val !== "-") {
-                          cellContent = html`<span class="commit-pill"
-                            >${val}</span
-                          >`;
-                        } else if (col === "workflow_name") {
-                          cellContent = html`<span class="tag-pill"
-                            >${val}</span
-                          >`;
-                        } else if (col === "artifact" && val && val !== "-") {
-                          cellContent = html`<span style="font-weight: 600;"
-                              >${val.name}</span
-                            >
-                            <span class="tag-pill">${val.version}</span>`;
-                        }
+                          let cellContent = val;
+                          if (col === "commit_sha" && val !== "-") {
+                            cellContent = html`<span class="commit-pill"
+                              >${val}</span
+                            >`;
+                          } else if (col === "workflow_name") {
+                            cellContent = html`<span class="tag-pill"
+                              >${val}</span
+                            >`;
+                          } else if (col === "artifact" && val && val !== "-") {
+                            cellContent = html`<span style="font-weight: 600;"
+                                >${val.name}</span
+                              >
+                              <span class="tag-pill">${val.version}</span>`;
+                          }
 
-                        if (col === "repository") {
-                          const displayVal =
-                            val !== "-" ? val.split("/").pop() : "-";
-                          cellContent = displayVal;
-                        }
+                          if (col === "repository") {
+                            const displayVal =
+                              val !== "-" ? val.split("/").pop() : "-";
+                            cellContent = displayVal;
+                          }
 
-                        return html`<td>${cellContent}</td>`;
-                      })}
-                    </tr>
-                    ${isExpanded ? this.renderEventDetails(event) : ""}
-                  `;
-                })}
+                          return html`<td>${cellContent}</td>`;
+                        })}
+                      </tr>
+                      ${isExpanded ? this.renderEventDetails(event) : ""}
+                    `;
+                  })
+            }
           </tbody>
         </table>
       </div>

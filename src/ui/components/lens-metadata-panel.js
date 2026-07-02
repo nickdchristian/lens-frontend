@@ -44,30 +44,36 @@ export class LensMetadataPanel extends LitElement {
     return html`
       <div
         class="metadata-grid"
-        style="${this.isLoading
-          ? "opacity: 0.5; pointer-events: none; transition: opacity 0.2s ease-in-out;"
-          : "opacity: 1; transition: opacity 0.2s ease-in-out;"}"
+        style="${
+          this.isLoading
+            ? "opacity: 0.5; pointer-events: none; transition: opacity 0.2s ease-in-out;"
+            : "opacity: 1; transition: opacity 0.2s ease-in-out;"
+        }"
       >
-        ${tagsList.length > 0
-          ? html`
-              <div class="metadata-card">
-                <h3>Tags</h3>
-                <ul class="metadata-list">
-                  ${tagsList}
-                </ul>
-              </div>
-            `
-          : ""}
-        ${dataList.length > 0
-          ? html`
-              <div class="metadata-card">
-                <h3>Data</h3>
-                <ul class="metadata-list">
-                  ${dataList}
-                </ul>
-              </div>
-            `
-          : ""}
+        ${
+          tagsList.length > 0
+            ? html`
+                <div class="metadata-card">
+                  <h3>Tags</h3>
+                  <ul class="metadata-list">
+                    ${tagsList}
+                  </ul>
+                </div>
+              `
+            : ""
+        }
+        ${
+          dataList.length > 0
+            ? html`
+                <div class="metadata-card">
+                  <h3>Data</h3>
+                  <ul class="metadata-list">
+                    ${dataList}
+                  </ul>
+                </div>
+              `
+            : ""
+        }
       </div>
     `;
   }
