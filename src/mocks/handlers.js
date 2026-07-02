@@ -23,4 +23,10 @@ export const handlers = [
       },
     ]);
   }),
+  http.get("/api/v1/events/repositories", () => {
+    return HttpResponse.json(["forgejo/lens-test-repo", "forgejo/lens-action"]);
+  }),
+  http.get("/api/v1/events/metrics", () => {
+    return HttpResponse.json(["build_time_seconds", "bundle_size_mb"]);
+  }),
 ];

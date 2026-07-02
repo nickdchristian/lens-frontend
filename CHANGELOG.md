@@ -2,17 +2,15 @@
 
 ## [0.8.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.7.1...lens-frontend-v0.8.0) (2026-06-18)
 
-
 ### Features
 
-* redesign artifact timeline grouping and pipeline nodes ([#28](https://github.com/nickdchristian/lens-frontend/issues/28)) ([548db16](https://github.com/nickdchristian/lens-frontend/commit/548db1649851de978c8a6d03c97b8e731a54f9e4))
+- redesign artifact timeline grouping and pipeline nodes ([#28](https://github.com/nickdchristian/lens-frontend/issues/28)) ([548db16](https://github.com/nickdchristian/lens-frontend/commit/548db1649851de978c8a6d03c97b8e731a54f9e4))
 
 ## [0.7.1](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.7.0...lens-frontend-v0.7.1) (2026-06-17)
 
-
 ### Bug Fixes
 
-* correctly extract latest metadata and chart events chronologically ([#26](https://github.com/nickdchristian/lens-frontend/issues/26)) ([d7ba37a](https://github.com/nickdchristian/lens-frontend/commit/d7ba37a81538582258fb370bf6999d85d62074c2))
+- correctly extract latest metadata and chart events chronologically ([#26](https://github.com/nickdchristian/lens-frontend/issues/26)) ([d7ba37a](https://github.com/nickdchristian/lens-frontend/commit/d7ba37a81538582258fb370bf6999d85d62074c2))
 
 ## [0.7.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.6.0...lens-frontend-v0.7.0) (2026-06-17)
 

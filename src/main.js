@@ -1,5 +1,10 @@
-import { state, subscribe } from "./state/store.js";
+import {} from "./state/store.js";
 import { logger } from "./utils/logger.js";
+import "@fontsource/dm-sans/400.css";
+import "@fontsource/dm-sans/500.css";
+import "@fontsource/dm-sans/700.css";
+import "@fontsource/inter/400.css";
+import "./style.css";
 
 // Global error boundaries
 window.addEventListener("error", (event) => {
@@ -13,13 +18,8 @@ window.addEventListener("error", (event) => {
 window.addEventListener("unhandledrejection", (event) => {
   logger.error("Unhandled promise rejection", { reason: event.reason });
 });
-import { fetchEvents } from "./api/client.js";
+
 import { applyTheme } from "./ui/theme.js";
-import { initDOM } from "./ui/dom.js";
-import { initTabs, initControls } from "./ui/controls.js";
-import { renderSidebar } from "./ui/sidebar.js";
-import { renderDashboard } from "./ui/dashboard.js";
-import { renderArtifactTrace } from "./ui/artifacts.js";
 
 export async function init() {
   if (import.meta.env.DEV) {
@@ -31,34 +31,8 @@ export async function init() {
     }
   }
 
-  initDOM();
-  applyTheme(state.isDarkMode);
-  initTabs();
-
-  subscribe(() => {
-    renderSidebar();
-    renderDashboard();
-    if (state.appMode === "artifacts" && state.currentArtifact) {
-      renderArtifactTrace(state.currentArtifact);
-    }
-  });
-
-  async function loadDashboard() {
-    try {
-      const data = await fetchEvents(null);
-      if (data && (data.status === "success" || data.length > 0)) {
-        // MSW returns an array directly in our mock
-        state.allEvents = data.events || data;
-        initControls();
-      } else {
-        throw new Error("Invalid Response");
-      }
-    } catch (error) {
-      logger.error("Error fetching data", { error: error.message });
-    }
-  }
-
-  loadDashboard();
+  // Hydrate user preferences
+  applyTheme();
 }
 
 document.addEventListener("DOMContentLoaded", init);
