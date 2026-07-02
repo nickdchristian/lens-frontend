@@ -59,7 +59,7 @@ describe("Theme utilities", () => {
       state.isDarkMode = false;
       expect(getNeutralLine()).toBe("#a3a3a3");
       expect(getFadedLine()).toBe("#e5e5e5");
-      expect(getGridLine()).toBe("#eaeaea");
+      expect(getGridLine()).toBe("rgba(0, 0, 0, 0.05)");
       expect(getTextColor()).toBe("#737373");
     });
 
@@ -67,7 +67,7 @@ describe("Theme utilities", () => {
       state.isDarkMode = true;
       expect(getNeutralLine()).toBe("#555555");
       expect(getFadedLine()).toBe("#222222");
-      expect(getGridLine()).toBe("#333333");
+      expect(getGridLine()).toBe("rgba(255, 255, 255, 0.05)");
       expect(getTextColor()).toBe("#a0a0a0");
     });
 

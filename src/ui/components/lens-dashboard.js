@@ -80,7 +80,9 @@ export class LensDashboard extends LitElement {
 
     // Apply scope filtering locally
     if (this.currentRepo) {
-      activeEvents = activeEvents.filter((e) => e.repository === this.currentRepo);
+      activeEvents = activeEvents.filter(
+        (e) => e.repository === this.currentRepo
+      );
     } else if (this.currentGroupKey && this.currentGroupVal) {
       activeEvents = activeEvents.filter(
         (e) => e.tags && e.tags[this.currentGroupKey] === this.currentGroupVal
@@ -132,8 +134,20 @@ export class LensDashboard extends LitElement {
       if (isLocalPagination) {
         const start = (this.currentPage - 1) * this.eventsPerPage;
         const end = start + this.eventsPerPage;
-        paginatedEvents = dashboardEvents.slice(start, end);
-        hasNextPage = dashboardEvents.length > end;
+        let filteredEvents = dashboardEvents;
+        
+        if (this.historySearchQuery) {
+          const sq = this.historySearchQuery.toLowerCase();
+          filteredEvents = filteredEvents.filter(e => 
+            (e.repository && e.repository.toLowerCase().includes(sq)) ||
+            (e.commit_sha && e.commit_sha.toLowerCase().includes(sq)) ||
+            (e.workflow_name && e.workflow_name.toLowerCase().includes(sq)) ||
+            (e.tags && Object.values(e.tags).some(v => String(v).toLowerCase().includes(sq)))
+          );
+        }
+        
+        paginatedEvents = filteredEvents.slice(start, end);
+        hasNextPage = filteredEvents.length > end;
       } else {
         paginatedEvents = dashboardEvents;
         hasNextPage = this.events && this.events.length === this.eventsPerPage;

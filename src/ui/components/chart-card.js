@@ -21,10 +21,6 @@ import { state, StoreController } from "../../state/store.js";
 import { getChartConfig, getChartScales, colorMix } from "../chart-config.js";
 import { getActiveSingleLine, getGridLine, getAccentColor } from "../theme.js";
 import { fetchAggregatedMetrics } from "../../api/client.js";
-import {
-  groupEventsByRepository,
-  getTopRepositoriesForMetric,
-} from "../../utils/data-processing.js";
 
 Chart.register(
   LineController,
@@ -206,20 +202,22 @@ export class LensChartCard extends LitElement {
 
       if (uniqueArtifacts.size > 1) {
         this.hideLegend = false;
-        Array.from(uniqueArtifacts).sort().forEach((art, idx) => {
-          queries.push({
-            repo: state.currentRepo,
-            artifact: art,
-            label: art,
-            colorIdx: idx
+        Array.from(uniqueArtifacts)
+          .sort()
+          .forEach((art, idx) => {
+            queries.push({
+              repo: state.currentRepo,
+              artifact: art,
+              label: art,
+              colorIdx: idx,
+            });
           });
-        });
       } else {
         queries.push({
           repo: state.currentRepo,
           artifact: null,
           label: state.currentRepo,
-          colorIdx: 0
+          colorIdx: 0,
         });
       }
     } else {
@@ -227,25 +225,35 @@ export class LensChartCard extends LitElement {
 
       // To differentiate artifacts on global view:
       const uniqueTargetsMap = {};
-      eventsToGroup.forEach(e => {
-         const targetKey = e.artifact && e.artifact.name ? `${e.repository}::${e.artifact.name}` : e.repository;
-         if (!uniqueTargetsMap[targetKey]) uniqueTargetsMap[targetKey] = [];
-         uniqueTargetsMap[targetKey].push(e);
+      eventsToGroup.forEach((e) => {
+        const targetKey =
+          e.artifact && e.artifact.name
+            ? `${e.repository}::${e.artifact.name}`
+            : e.repository;
+        if (!uniqueTargetsMap[targetKey]) uniqueTargetsMap[targetKey] = [];
+        uniqueTargetsMap[targetKey].push(e);
       });
 
       let targetsForKey = Object.keys(uniqueTargetsMap).filter((key) => {
         return uniqueTargetsMap[key].some(
           (e) =>
-            e.metrics?.[this.metricKey] !== undefined && e.metrics?.[this.metricKey] !== null
+            e.metrics?.[this.metricKey] !== undefined &&
+            e.metrics?.[this.metricKey] !== null
         );
       });
 
       if (targetsForKey.length > 10) {
-        targetsForKey = targetsForKey.sort((a, b) => {
-          const aCount = uniqueTargetsMap[a].filter(e => e.metrics?.[this.metricKey] !== undefined).length;
-          const bCount = uniqueTargetsMap[b].filter(e => e.metrics?.[this.metricKey] !== undefined).length;
-          return bCount - aCount;
-        }).slice(0, 10);
+        targetsForKey = targetsForKey
+          .sort((a, b) => {
+            const aCount = uniqueTargetsMap[a].filter(
+              (e) => e.metrics?.[this.metricKey] !== undefined
+            ).length;
+            const bCount = uniqueTargetsMap[b].filter(
+              (e) => e.metrics?.[this.metricKey] !== undefined
+            ).length;
+            return bCount - aCount;
+          })
+          .slice(0, 10);
       }
 
       const uniqueTargets = Object.keys(uniqueTargetsMap).sort();
@@ -257,20 +265,20 @@ export class LensChartCard extends LitElement {
       targetsForKey.forEach((target) => {
         let repo, artifact, label;
         if (target.includes("::")) {
-           [repo, artifact] = target.split("::");
-           // It's part of a monorepo or an artifact deployment
-           label = `${repo.split("/").pop()} (${artifact})`;
+          [repo, artifact] = target.split("::");
+          // It's part of a monorepo or an artifact deployment
+          label = `${repo.split("/").pop()} (${artifact})`;
         } else {
-           repo = target;
-           artifact = null;
-           label = repo.split("/").pop() || repo;
+          repo = target;
+          artifact = null;
+          label = repo.split("/").pop() || repo;
         }
 
         queries.push({
           repo: repo,
           artifact: artifact,
           label: label,
-          colorIdx: targetColorMap[target]
+          colorIdx: targetColorMap[target],
         });
       });
     }
@@ -427,36 +435,42 @@ export class LensChartCard extends LitElement {
       >
         <div class="header">
           <h3>${title}</h3>
-          ${
-            this.isGlobalView
-              ? html`<span class="top-tag">Top 5</span>`
-              : ""
-          }
+          ${this.isGlobalView ? html`<span class="top-tag">Top 5</span>` : ""}
         </div>
         ${(() => {
           const hasData =
             this.datasets &&
             this.datasets.some((ds) => ds.data && ds.data.length > 0);
-          const compactDatasets = this.datasets ? this.datasets.slice(0, 5) : [];
+          const compactDatasets = this.datasets
+            ? this.datasets.slice(0, 5)
+            : [];
           return hasData
             ? html`<div style="height: 250px; position: relative;">
-                <canvas
-                  id="chartCanvas"
-                  role="img"
-                  aria-label="${title || "Data chart"}"
-                ></canvas>
-              </div>
-              ${!this.hideLegend && compactDatasets.length > 0 ? html`
-                <div class="custom-legend">
-                  ${compactDatasets.map(ds => html`
-                    <div class="legend-item" title="${ds.label}">
-                      <span class="legend-color" style="background-color: ${ds.pointBackgroundColor || ds.borderColor}"></span>
-                      <span class="legend-label">${ds.label}</span>
-                    </div>
-                  `)}
+                  <canvas
+                    id="chartCanvas"
+                    role="img"
+                    aria-label="${title || "Data chart"}"
+                  ></canvas>
                 </div>
-              ` : ""}
-              `
+                ${
+                  !this.hideLegend && compactDatasets.length > 0
+                    ? html`
+                        <div class="custom-legend">
+                          ${compactDatasets.map(
+                            (ds) => html`
+                              <div class="legend-item" title="${ds.label}">
+                                <span
+                                  class="legend-color"
+                                  style="background-color: ${ds.pointBackgroundColor || ds.borderColor}"
+                                ></span>
+                                <span class="legend-label">${ds.label}</span>
+                              </div>
+                            `
+                          )}
+                        </div>
+                      `
+                    : ""
+                } `
             : html`<div class="empty-message">${this.emptyMessage}</div>`;
         })()}
       </div>

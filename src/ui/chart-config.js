@@ -31,7 +31,9 @@ export function getChartConfig(
   const supportedCartesianTypes = ["line", "bar", "scatter", "area"];
 
   if (finalType) {
-    if (["pie", "doughnut", "radar", "polarArea", "bubble"].includes(finalType)) {
+    if (
+      ["pie", "doughnut", "radar", "polarArea", "bubble"].includes(finalType)
+    ) {
       console.warn(
         `[Lens] Chart type '${finalType}' violates SWD principles. Falling back to default.`
       );
