@@ -1,0 +1,137 @@
+/* App and Settings Component Styles */
+
+/* App Layout Styles */
+.mobile-menu-btn {
+  margin-right: var(--space-4);
+}
+.logo-btn {
+  cursor: pointer;
+}
+.top-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.app-main-content {
+  flex: 1;
+  min-width: 0;
+}
+.modal-content-inner {
+  width: 90vw;
+  height: 85vh;
+  max-width: 1400px;
+  display: flex;
+  flex-direction: column;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: var(--space-4);
+}
+.modal-header h3 {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+}
+.modal-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: var(--space-2);
+}
+.modal-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+/* Settings Styles */
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6) var(--space-4);
+}
+.settings-header {
+  margin-bottom: var(--space-8);
+  width: 100%;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--space-4);
+}
+.settings-title {
+  margin: 0;
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  letter-spacing: -0.02em;
+}
+.settings-container {
+  max-width: 800px;
+  padding-bottom: 80px;
+  width: 100%;
+  margin: 0 auto;
+}
+.settings-group {
+  margin-bottom: var(--space-10);
+}
+.settings-group h3 {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-3);
+  padding-left: var(--space-2);
+  margin-top: 0;
+}
+.settings-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-6);
+}
+.setting-row:not(:last-child) {
+  border-bottom: 1px solid var(--border-color);
+}
+.setting-info {
+  flex: 1;
+  padding-right: var(--space-6);
+}
+.setting-info h4 {
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  margin-bottom: 4px;
+  margin-top: 0;
+}
+.setting-info p {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+}
+.setting-control {
+  flex: 0 0 300px;
+}
+.setting-input {
+  width: 100%;
+  padding: var(--space-3);
+  font-size: var(--text-base);
+  border-radius: var(--radius-md);
+  box-sizing: border-box;
+}
+.action-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-6);
+}

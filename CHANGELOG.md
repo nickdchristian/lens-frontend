@@ -1,37 +1,44 @@
 # Changelog
 
-## [0.7.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.6.0...lens-frontend-v0.7.0) (2026-06-17)
-
+## [0.8.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.7.1...lens-frontend-v0.8.0) (2026-06-18)
 
 ### Features
 
-* ui polish, structural refactor, and performance optimizations ([#21](https://github.com/nickdchristian/lens-frontend/issues/21)) ([f9837cd](https://github.com/nickdchristian/lens-frontend/commit/f9837cd43f489bc4f46e5f8ba092fb0dcc4b049d))
+- redesign artifact timeline grouping and pipeline nodes ([#28](https://github.com/nickdchristian/lens-frontend/issues/28)) ([548db16](https://github.com/nickdchristian/lens-frontend/commit/548db1649851de978c8a6d03c97b8e731a54f9e4))
+
+## [0.7.1](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.7.0...lens-frontend-v0.7.1) (2026-06-17)
+
+### Bug Fixes
+
+- correctly extract latest metadata and chart events chronologically ([#26](https://github.com/nickdchristian/lens-frontend/issues/26)) ([d7ba37a](https://github.com/nickdchristian/lens-frontend/commit/d7ba37a81538582258fb370bf6999d85d62074c2))
+
+## [0.7.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.6.0...lens-frontend-v0.7.0) (2026-06-17)
+
+### Features
+
+- ui polish, structural refactor, and performance optimizations ([#21](https://github.com/nickdchristian/lens-frontend/issues/21)) ([f9837cd](https://github.com/nickdchristian/lens-frontend/commit/f9837cd43f489bc4f46e5f8ba092fb0dcc4b049d))
 
 ## [0.6.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.5.1...lens-frontend-v0.6.0) (2026-06-17)
 
-
 ### Features
 
-* implement ui pagination for data grid ([#20](https://github.com/nickdchristian/lens-frontend/issues/20)) ([9b58e84](https://github.com/nickdchristian/lens-frontend/commit/9b58e84fc9495947da69cdbe2fc04d03ef96c7d4))
-
+- implement ui pagination for data grid ([#20](https://github.com/nickdchristian/lens-frontend/issues/20)) ([9b58e84](https://github.com/nickdchristian/lens-frontend/commit/9b58e84fc9495947da69cdbe2fc04d03ef96c7d4))
 
 ### Bug Fixes
 
-* grouping bug logic in ui.js ([#18](https://github.com/nickdchristian/lens-frontend/issues/18)) ([fbf9802](https://github.com/nickdchristian/lens-frontend/commit/fbf98027a9efda87cb3f915a9eda89fb7bdea5c4))
+- grouping bug logic in ui.js ([#18](https://github.com/nickdchristian/lens-frontend/issues/18)) ([fbf9802](https://github.com/nickdchristian/lens-frontend/commit/fbf98027a9efda87cb3f915a9eda89fb7bdea5c4))
 
 ## [0.5.1](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.5.0...lens-frontend-v0.5.1) (2026-06-17)
 
-
 ### Bug Fixes
 
-* frontend data logic ([#16](https://github.com/nickdchristian/lens-frontend/issues/16)) ([68a4164](https://github.com/nickdchristian/lens-frontend/commit/68a4164f7485d80aa66074b547049de0337dd3e4))
+- frontend data logic ([#16](https://github.com/nickdchristian/lens-frontend/issues/16)) ([68a4164](https://github.com/nickdchristian/lens-frontend/commit/68a4164f7485d80aa66074b547049de0337dd3e4))
 
 ## [0.5.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.4.0...lens-frontend-v0.5.0) (2026-06-16)
 
-
 ### Features
 
-* add accessibility, MSW local mock api, and reactive state management  ([#13](https://github.com/nickdchristian/lens-frontend/issues/13)) ([9eb600e](https://github.com/nickdchristian/lens-frontend/commit/9eb600ec4bde65c96222053d583534b3a57201b3))
+- add accessibility, MSW local mock api, and reactive state management ([#13](https://github.com/nickdchristian/lens-frontend/issues/13)) ([9eb600e](https://github.com/nickdchristian/lens-frontend/commit/9eb600ec4bde65c96222053d583534b3a57201b3))
 
 ## [0.4.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.3.0...lens-frontend-v0.4.0) (2026-06-16)
 

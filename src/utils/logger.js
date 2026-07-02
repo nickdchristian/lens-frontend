@@ -9,8 +9,8 @@ const LogLevel = {
   ERROR: 3,
 };
 
-// Default log level based on environment or set to INFO
-const currentLevel = LogLevel.INFO;
+// Default log level based on environment
+const currentLevel = import.meta.env?.PROD ? LogLevel.WARN : LogLevel.INFO;
 
 function log(level, message, context = {}) {
   if (level < currentLevel) return;

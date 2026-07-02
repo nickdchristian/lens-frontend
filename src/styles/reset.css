@@ -1,0 +1,65 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+body {
+  font-family: "DM Sans", sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+button {
+  appearance: none;
+  -webkit-appearance: none;
+  box-sizing: border-box;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  font-family: inherit;
+  border: none;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+}
+
+button:active {
+  transform: none !important;
+  margin: 0 !important;
+}
+
+/* Lit Light DOM Web Components should NOT use display: contents.
+   They will be given proper display properties in layout.css */
+lens-app,
+lens-sidebar,
+lens-dashboard,
+lens-settings,
+lens-overview-charts,
+lens-chart-card,
+lens-history-table {
+  box-sizing: border-box;
+  display: block;
+}

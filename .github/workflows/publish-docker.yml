@@ -3,7 +3,7 @@ name: Publish Docker Image
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   push_to_registry:
@@ -14,7 +14,7 @@ jobs:
       packages: write
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Log in to the Container registry
         uses: docker/login-action@v4
