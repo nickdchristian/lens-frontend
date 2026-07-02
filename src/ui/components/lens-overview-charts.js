@@ -30,6 +30,17 @@ export class LensOverviewCharts extends LitElement {
 
     let keys = state.availableMetrics || [];
 
+    // Fallback: if availableMetrics isn't populated, derive from events
+    if (keys.length === 0 && this.events) {
+      const keysSet = new Set();
+      this.events.forEach((e) => {
+        if (e.metrics) {
+          Object.keys(e.metrics).forEach((k) => keysSet.add(k));
+        }
+      });
+      keys = Array.from(keysSet);
+    }
+
     if (isArtifactRepoView) {
       keys = keys.filter((k) => doraMetrics.includes(k));
       // Ensure they exist in Artifact Repo view

@@ -74,7 +74,18 @@ export class LensDashboard extends LitElement {
     else if (this.timePeriod === "year")
       cutoffDate.setFullYear(now.getFullYear() - 1);
 
-    const activeEvents = this.events || [];
+    // FIX: Always use globalEvents for charts to ensure we have a large enough dataset,
+    // rather than the paginated this.events (which only has 25 items).
+    let activeEvents = this.globalEvents || [];
+
+    // Apply scope filtering locally
+    if (this.currentRepo) {
+      activeEvents = activeEvents.filter((e) => e.repository === this.currentRepo);
+    } else if (this.currentGroupKey && this.currentGroupVal) {
+      activeEvents = activeEvents.filter(
+        (e) => e.tags && e.tags[this.currentGroupKey] === this.currentGroupVal
+      );
+    }
 
     let dashboardEvents =
       this.appMode === "artifacts"
@@ -287,7 +298,7 @@ export class LensDashboard extends LitElement {
                 this.currentArtifact &&
                 this.currentArtifact.version
               ? html`<lens-artifact-trace
-                  .events=${this.events}
+                  .events=${this.globalEvents}
                   .artifactObj=${this.currentArtifact}
                   .activeTraceIndex=${this.activeTraceIndex}
                   @node-click=${(e) => {
