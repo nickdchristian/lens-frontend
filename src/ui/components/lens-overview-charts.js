@@ -28,10 +28,9 @@ export class LensOverviewCharts extends LitElement {
       "change_failure_rate",
     ];
 
-    let keys = state.availableMetrics || [];
+    let keys = [];
 
-    // Fallback: if availableMetrics isn't populated, derive from events
-    if (keys.length === 0 && this.events) {
+    if (this.events && this.events.length > 0) {
       const keysSet = new Set();
       this.events.forEach((e) => {
         if (e.metrics) {
