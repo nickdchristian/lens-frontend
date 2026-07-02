@@ -4,7 +4,8 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 let currentAbortController = null;
 
 function getSafeBaseUrl() {
-  const apiHost = localStorage.getItem("apiHost") || import.meta.env.VITE_API_BASE_URL || "";
+  const apiHost =
+    localStorage.getItem("apiHost") || import.meta.env.VITE_API_BASE_URL || "";
   if (!apiHost) return "";
 
   if (apiHost.startsWith("http://") || apiHost.startsWith("https://")) {
@@ -76,7 +77,7 @@ export async function fetchRepositories() {
       if (!response.ok)
         throw new Error(`Failed to fetch: ${response.statusText}`);
       return await response.json();
-    } catch (error) {
+    } catch {
       attempt++;
       if (attempt >= maxAttempts) return [];
       await sleep(delays[attempt - 1]);
@@ -106,7 +107,7 @@ export async function fetchAvailableMetrics(repository = null) {
       if (!response.ok)
         throw new Error(`Failed to fetch: ${response.statusText}`);
       return await response.json();
-    } catch (error) {
+    } catch {
       attempt++;
       if (attempt >= maxAttempts) return [];
       await sleep(delays[attempt - 1]);

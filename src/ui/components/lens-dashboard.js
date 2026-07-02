@@ -65,7 +65,6 @@ export class LensDashboard extends LitElement {
   }
 
   getDashboardEvents() {
-
     const now = new Date();
     let cutoffDate = new Date();
     if (this.timePeriod === "day") cutoffDate.setDate(now.getDate() - 1);
@@ -195,15 +194,29 @@ export class LensDashboard extends LitElement {
                         height: 100%;
                         background-color: var(--color-primary);
                         border-radius: 2px;
-                        animation: telemetry-bounce 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+                        animation: telemetry-bounce 1s
+                          cubic-bezier(0.4, 0, 0.2, 1) infinite;
                         transform-origin: bottom;
                       }
-                      .lens-loader .bar1 { animation-delay: 0s; }
-                      .lens-loader .bar2 { animation-delay: 0.2s; }
-                      .lens-loader .bar3 { animation-delay: 0.4s; }
+                      .lens-loader .bar1 {
+                        animation-delay: 0s;
+                      }
+                      .lens-loader .bar2 {
+                        animation-delay: 0.2s;
+                      }
+                      .lens-loader .bar3 {
+                        animation-delay: 0.4s;
+                      }
                       @keyframes telemetry-bounce {
-                        0%, 100% { transform: scaleY(0.3); opacity: 0.4; }
-                        50% { transform: scaleY(1); opacity: 1; }
+                        0%,
+                        100% {
+                          transform: scaleY(0.3);
+                          opacity: 0.4;
+                        }
+                        50% {
+                          transform: scaleY(1);
+                          opacity: 1;
+                        }
                       }
                     </style>
                   </div>
@@ -249,7 +262,11 @@ export class LensDashboard extends LitElement {
       <div
         class="tab-content ${this.activeTab === "overview" ? "active" : ""}"
         role="tabpanel"
-        style="${isSettings || this.activeTab !== "overview" ? "display: none;" : ""} transition: opacity 0.3s ease; opacity: ${this.isLoading ? "0.5" : "1"}; pointer-events: ${this.isLoading ? "none" : "auto"};"
+        style="${isSettings || this.activeTab !== "overview"
+          ? "display: none;"
+          : ""} transition: opacity 0.3s ease; opacity: ${this.isLoading
+          ? "0.5"
+          : "1"}; pointer-events: ${this.isLoading ? "none" : "auto"};"
       >
         ${metadata
           ? html`<lens-metadata-panel
@@ -287,7 +304,11 @@ export class LensDashboard extends LitElement {
       <div
         class="tab-content ${this.activeTab === "history" ? "active" : ""}"
         role="tabpanel"
-        style="${isSettings || this.activeTab !== "history" ? "display: none;" : ""} transition: opacity 0.3s ease; opacity: ${this.isLoading ? "0.5" : "1"}; pointer-events: ${this.isLoading ? "none" : "auto"};"
+        style="${isSettings || this.activeTab !== "history"
+          ? "display: none;"
+          : ""} transition: opacity 0.3s ease; opacity: ${this.isLoading
+          ? "0.5"
+          : "1"}; pointer-events: ${this.isLoading ? "none" : "auto"};"
       >
         <lens-history-table
           .events=${paginatedEvents}

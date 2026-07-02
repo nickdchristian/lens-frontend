@@ -31,7 +31,11 @@ test.beforeEach(async ({ page }) => {
     const search = url.searchParams.get("search");
 
     if (url.pathname.includes("metrics/aggregated")) {
-      await route.fulfill({ json: { data: mockMetrics } });
+      await route.fulfill({ json: mockMetrics });
+    } else if (url.pathname.includes("/repositories")) {
+      await route.fulfill({ json: ["test-org/repo-a", "test-org/repo-b"] });
+    } else if (url.pathname.includes("/metrics")) {
+      await route.fulfill({ json: ["deployment_count", "lead_time_minutes"] });
     } else {
       let events = [...mockEvents];
       if (search) {
@@ -43,14 +47,14 @@ test.beforeEach(async ({ page }) => {
       console.log(
         `MOCK API: search=${search}, returning ${events.length} events`
       );
-      await route.fulfill({ json: { status: "success", events } });
+      await route.fulfill({ json: events });
     }
   });
 
   // Set fake apiHost in localStorage so the app doesn't try to use relative paths
   // that might hit Playwright's local server incorrectly
   await page.addInitScript(() => {
-    window.localStorage.setItem("apiHost", "http://mock-api");
+    window.localStorage.setItem("apiHost", "");
   });
 
   await page.goto("/");
@@ -69,7 +73,7 @@ test.describe("Dashboard E2E", () => {
 
   test("sidebar interaction filters to repository view", async ({ page }) => {
     // Click on repo-a in sidebar
-    const repoBtn = page.locator("button.nav-item", { hasText: "repo-a" });
+    const repoBtn = page.locator("a.nav-item", { hasText: "repo-a" });
     await repoBtn.click();
 
     // Verify title changes
@@ -87,21 +91,17 @@ test.describe("Dashboard E2E", () => {
     await page.locator('a[href="/artifacts"]').first().click();
 
     // Wait for artifacts to populate in sidebar
-    const artifactBtn = page.locator("button.group-header", {
+    const artifactBtn = page.locator("a.group-header", {
       hasText: "MY-APP",
     });
     await expect(artifactBtn).toBeVisible();
     await artifactBtn.click();
 
     // Click the version
-    const versionBtn = page.locator("button.nav-item", { hasText: "v1.0" });
+    const versionBtn = page.locator("a.nav-item", { hasText: "v1.0" });
     await versionBtn.click();
 
     // Verify artifact trace component is visible
-    const traceContainer = page.locator("#artifact-trace-container");
-    await expect(traceContainer).toBeVisible();
-
-    // The web component should be present
     const traceComponent = page.locator("lens-artifact-trace");
     await expect(traceComponent).toBeVisible();
   });

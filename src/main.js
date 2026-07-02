@@ -18,7 +18,7 @@ window.addEventListener("error", (event) => {
 window.addEventListener("unhandledrejection", (event) => {
   logger.error("Unhandled promise rejection", { reason: event.reason });
 });
-import { fetchEvents } from "./api/client.js";
+
 import { applyTheme } from "./ui/theme.js";
 
 export async function init() {

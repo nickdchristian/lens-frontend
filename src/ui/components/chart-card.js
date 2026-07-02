@@ -170,7 +170,7 @@ export class LensChartCard extends LitElement {
     this.hideLegend = !!state.currentRepo;
 
     const isSingleRepo = !!state.currentRepo && state.currentRepo !== "All";
-    let reposForKey = [];
+    let reposForKey;
     const repoColorMap = {};
 
     if (isSingleRepo) {
@@ -268,12 +268,12 @@ export class LensChartCard extends LitElement {
     });
 
     const results = await Promise.all(promises);
-    
+
     // Discard results if a newer fetch was initiated
     if (this._currentFetchId !== fetchId) {
       return;
     }
-    
+
     this.datasets = results.filter((r) => r !== null);
     this.chartLoading = false;
   }

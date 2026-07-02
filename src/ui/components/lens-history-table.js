@@ -1,5 +1,5 @@
 import { LitElement, html } from "lit";
-import {} from "../../state/store.js";
+import { state } from "../../state/store.js";
 import { formatDate } from "../../utils/formatters.js";
 
 export class LensHistoryTable extends LitElement {

@@ -4,7 +4,6 @@ import { Chart } from "chart.js";
 import { state, StoreController } from "../../state/store.js";
 import {
   fetchEvents,
-  fetchArtifact,
   fetchRepositories,
   fetchAvailableMetrics,
 } from "../../api/client.js";
@@ -177,7 +176,7 @@ export class LensApp extends LitElement {
         e.preventDefault();
         const path = anchor.href.substring(window.location.origin.length);
         this.router.goto(path);
-        
+
         // Auto-close sidebar on mobile navigation
         if (state.isSidebarOpen) {
           state.isSidebarOpen = false;
