@@ -1,6 +1,11 @@
 import { LitElement, html } from "lit";
 import { Chart } from "chart.js";
-import { state, StoreController, syncUrlToState, createUrl } from "../../state/store.js";
+import {
+  state,
+  StoreController,
+  syncUrlToState,
+  createUrl,
+} from "../../state/store.js";
 import {
   fetchEvents,
   fetchRepositories,
@@ -252,7 +257,16 @@ export class LensApp extends LitElement {
             class="logo logo-btn"
             id="logo-btn"
             @click=${() => {
-              window.history.pushState(null, "", createUrl({ mode: 'repositories', repo: null, groupKey: null, groupVal: null }));
+              window.history.pushState(
+                null,
+                "",
+                createUrl({
+                  mode: "repositories",
+                  repo: null,
+                  groupKey: null,
+                  groupVal: null,
+                })
+              );
               syncUrlToState();
             }}
           >
@@ -263,20 +277,20 @@ export class LensApp extends LitElement {
         <div class="top-bar-right">
           <nav class="top-nav">
             <a
-              href="${createUrl({ mode: 'repositories' })}"
+              href="${createUrl({ mode: "repositories" })}"
               class="top-nav-btn ${isRepositories ? "active" : ""}"
             >
               Repositories
             </a>
             <a
-              href="${createUrl({ mode: 'artifacts' })}"
+              href="${createUrl({ mode: "artifacts" })}"
               class="top-nav-btn ${isArtifacts ? "active" : ""}"
               >Artifacts</a
             >
           </nav>
           <div class="top-bar-actions">
             <a
-              href="${createUrl({ mode: 'settings' })}"
+              href="${createUrl({ mode: "settings" })}"
               class="icon-btn"
               aria-label="Settings"
               title="Settings"

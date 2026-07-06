@@ -54,14 +54,22 @@ export class LensRecentArtifacts extends LitElement {
           tabindex="0"
           role="button"
           @click=${() => {
-            const url = createUrl({ mode: 'artifacts', artifactName: art.name, artifactVersion: art.version });
+            const url = createUrl({
+              mode: "artifacts",
+              artifactName: art.name,
+              artifactVersion: art.version,
+            });
             window.history.pushState({}, "", url);
             window.dispatchEvent(new Event("popstate"));
           }}
           @keydown=${(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              const url = createUrl({ mode: 'artifacts', artifactName: art.name, artifactVersion: art.version });
+              const url = createUrl({
+                mode: "artifacts",
+                artifactName: art.name,
+                artifactVersion: art.version,
+              });
               window.history.pushState({}, "", url);
               window.dispatchEvent(new Event("popstate"));
             }
