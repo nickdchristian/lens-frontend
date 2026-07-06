@@ -1,5 +1,5 @@
 import { LitElement, html } from "lit";
-import { state, StoreController } from "../../state/store.js";
+import { state, StoreController, createUrl } from "../../state/store.js";
 
 export class LensSidebar extends LitElement {
   createRenderRoot() {
@@ -119,7 +119,7 @@ export class LensSidebar extends LitElement {
             return html`
               <li>
                 <a
-                  href="/repositories/${encodeURIComponent(repo)}"
+                  href="${createUrl({ mode: 'repositories', repo })}"
                   class="nav-item ${isActive ? "active" : ""}"
                   style="display: block; text-decoration: none;"
                 >
@@ -154,7 +154,7 @@ export class LensSidebar extends LitElement {
             .map((gVal) => {
               const isGroupActive =
                 this.currentGroupVal === gVal && !this.currentRepo;
-              const hrefGroup = `/group/${encodeURIComponent(this.currentGroupKey)}/${encodeURIComponent(gVal)}`;
+              const hrefGroup = createUrl({ mode: 'repositories', groupKey: this.currentGroupKey, groupVal: gVal, repo: null });
 
               return html`
                 <li>
@@ -171,7 +171,7 @@ export class LensSidebar extends LitElement {
                       .map((repo) => {
                         const isActive = this.currentRepo === repo;
                         const label = repo.split("/").pop() || repo;
-                        const hrefRepo = `/group/${encodeURIComponent(this.currentGroupKey)}/${encodeURIComponent(gVal)}/${encodeURIComponent(repo)}`;
+                        const hrefRepo = createUrl({ mode: 'repositories', groupKey: this.currentGroupKey, groupVal: gVal, repo });
                         return html`
                           <li>
                             <a
@@ -208,7 +208,7 @@ export class LensSidebar extends LitElement {
             return html`
               <li>
                 <a
-                  href="/artifacts/${encodeURIComponent(artName)}"
+                  href="${createUrl({ mode: 'artifacts', artifactName: artName, artifactVersion: null })}"
                   class="group-header ${
                     this.currentArtifact?.name === artName &&
                     !this.currentArtifact?.version
@@ -228,7 +228,7 @@ export class LensSidebar extends LitElement {
                         this.currentArtifact?.name === artName &&
                         this.currentArtifact?.version === artVersion;
 
-                      const hrefVersion = `/artifacts/${encodeURIComponent(artName)}/${encodeURIComponent(artVersion)}`;
+                      const hrefVersion = createUrl({ mode: 'artifacts', artifactName: artName, artifactVersion: artVersion });
                       return html`
                         <li>
                           <a
@@ -278,7 +278,7 @@ export class LensSidebar extends LitElement {
         style="padding: var(--space-4) var(--space-4) 0 var(--space-4); display: flex; flex-direction: column; gap: var(--space-2);"
       >
         <a
-          href="/repositories"
+          href="${createUrl({ mode: 'repositories' })}"
           class="top-nav-btn mobile-sidebar-btn ${
             !isArtifacts && !isSettings ? "active" : ""
           }"
@@ -290,7 +290,7 @@ export class LensSidebar extends LitElement {
           Repositories
         </a>
         <a
-          href="/artifacts"
+          href="${createUrl({ mode: 'artifacts' })}"
           class="top-nav-btn mobile-sidebar-btn ${isArtifacts ? "active" : ""}"
           @click=${() => {
             state.isSidebarOpen = false;
@@ -300,7 +300,7 @@ export class LensSidebar extends LitElement {
           Artifacts
         </a>
         <a
-          href="/settings"
+          href="${createUrl({ mode: 'settings' })}"
           id="mobile-settings-btn"
           class="top-nav-btn mobile-sidebar-btn ${isSettings ? "active" : ""}"
           @click=${() => {
@@ -373,7 +373,7 @@ export class LensSidebar extends LitElement {
               </button>
               <div class="dropdown-menu" role="menu">
                 <a
-                  href="/repositories"
+                  href="${createUrl({ mode: 'repositories', groupKey: null, groupVal: null })}"
                   class="dropdown-item ${!this.currentGroupKey ? "active" : ""}"
                   role="menuitem"
                   style="display: block; text-decoration: none;"
@@ -388,7 +388,7 @@ export class LensSidebar extends LitElement {
                   .map(
                     (key) => html`
                       <a
-                        href="/group/${encodeURIComponent(key)}"
+                        href="${createUrl({ mode: 'repositories', groupKey: key, groupVal: null, repo: null })}"
                         class="dropdown-item ${
                           this.currentGroupKey === key ? "active" : ""
                         }"

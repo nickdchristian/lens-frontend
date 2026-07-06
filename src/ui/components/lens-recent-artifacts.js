@@ -1,5 +1,6 @@
 import { LitElement, html } from "lit";
 import { formatDate } from "../../utils/formatters.js";
+import { createUrl } from "../../state/store.js";
 
 export class LensRecentArtifacts extends LitElement {
   createRenderRoot() {
@@ -53,14 +54,14 @@ export class LensRecentArtifacts extends LitElement {
           tabindex="0"
           role="button"
           @click=${() => {
-            const url = `/artifacts/${encodeURIComponent(art.name)}/${encodeURIComponent(art.version)}`;
+            const url = createUrl({ mode: 'artifacts', artifactName: art.name, artifactVersion: art.version });
             window.history.pushState({}, "", url);
             window.dispatchEvent(new Event("popstate"));
           }}
           @keydown=${(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              const url = `/artifacts/${encodeURIComponent(art.name)}/${encodeURIComponent(art.version)}`;
+              const url = createUrl({ mode: 'artifacts', artifactName: art.name, artifactVersion: art.version });
               window.history.pushState({}, "", url);
               window.dispatchEvent(new Event("popstate"));
             }

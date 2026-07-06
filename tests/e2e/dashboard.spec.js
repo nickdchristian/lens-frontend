@@ -88,7 +88,7 @@ test.describe("Dashboard E2E", () => {
     page,
   }) => {
     // Click artifacts top nav tab
-    await page.locator('a[href="/artifacts"]').first().click();
+    await page.locator('a[href="?mode=artifacts"]').first().click();
 
     // Wait for artifacts to populate in sidebar
     const artifactBtn = page.locator("a.group-header", {
