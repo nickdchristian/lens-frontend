@@ -2,17 +2,15 @@
 
 ## [0.10.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.9.0...lens-frontend-v0.10.0) (2026-07-02)
 
-
 ### Features
 
-* enhanced dashboard telemetry ([#40](https://github.com/nickdchristian/lens-frontend/issues/40)) ([fb20c9b](https://github.com/nickdchristian/lens-frontend/commit/fb20c9be77b5cca94d13a4e5325fa8be323f8ba8))
+- enhanced dashboard telemetry ([#40](https://github.com/nickdchristian/lens-frontend/issues/40)) ([fb20c9b](https://github.com/nickdchristian/lens-frontend/commit/fb20c9be77b5cca94d13a4e5325fa8be323f8ba8))
 
 ## [0.9.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.8.0...lens-frontend-v0.9.0) (2026-07-02)
 
-
 ### Features
 
-* trigger release for new architecture ([4bd97ba](https://github.com/nickdchristian/lens-frontend/commit/4bd97ba2a7e3020cf9bd985076ff2228b669bfb6))
+- trigger release for new architecture ([4bd97ba](https://github.com/nickdchristian/lens-frontend/commit/4bd97ba2a7e3020cf9bd985076ff2228b669bfb6))
 
 ## [0.8.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.7.1...lens-frontend-v0.8.0) (2026-06-18)
 

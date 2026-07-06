@@ -1,7 +1,11 @@
 import { LitElement, html } from "lit";
-import { Router } from "@lit-labs/router";
 import { Chart } from "chart.js";
-import { state, StoreController } from "../../state/store.js";
+import {
+  state,
+  StoreController,
+  syncUrlToState,
+  createUrl,
+} from "../../state/store.js";
 import {
   fetchEvents,
   fetchRepositories,
@@ -30,126 +34,6 @@ export class LensApp extends LitElement {
 
     // We will track previous fetch parameters to know when to re-fetch
     this._lastFetchParams = {};
-
-    this.router = new Router(this, [
-      {
-        path: "/",
-        enter: () => {
-          this.router.goto("/repositories");
-          return false;
-        },
-      },
-      {
-        path: "/repositories",
-        enter: () => {
-          state.appMode = "repositories";
-          state.currentRepo = null;
-          state.currentGroupVal = null;
-          state.currentGroupKey = null;
-          state.currentArtifact = null;
-          return true;
-        },
-        render: () => this.renderAppLayout(),
-      },
-      {
-        path: "/repositories/:repo",
-        enter: ({ repo }) => {
-          state.appMode = "repositories";
-          state.currentRepo = decodeURIComponent(repo);
-          state.currentGroupVal = null;
-          state.currentGroupKey = null;
-          state.currentArtifact = null;
-          return true;
-        },
-        render: () => this.renderAppLayout(),
-      },
-      {
-        path: "/group/:key",
-        enter: ({ key }) => {
-          state.appMode = "repositories";
-          state.currentGroupKey = decodeURIComponent(key);
-          state.currentGroupVal = null;
-          state.currentRepo = null;
-          state.currentArtifact = null;
-          return true;
-        },
-        render: () => this.renderAppLayout(),
-      },
-      {
-        path: "/group/:key/:val",
-        enter: ({ key, val }) => {
-          state.appMode = "repositories";
-          state.currentGroupKey = decodeURIComponent(key);
-          state.currentGroupVal = decodeURIComponent(val);
-          state.currentRepo = null;
-          state.currentArtifact = null;
-          return true;
-        },
-        render: () => this.renderAppLayout(),
-      },
-      {
-        path: "/group/:key/:val/:repo",
-        enter: ({ key, val, repo }) => {
-          state.appMode = "repositories";
-          state.currentGroupKey = decodeURIComponent(key);
-          state.currentGroupVal = decodeURIComponent(val);
-          state.currentRepo = decodeURIComponent(repo);
-          state.currentArtifact = null;
-          return true;
-        },
-        render: () => this.renderAppLayout(),
-      },
-      {
-        path: "/artifacts",
-        enter: () => {
-          state.appMode = "artifacts";
-          state.currentArtifact = null;
-          state.currentRepo = null;
-          state.currentGroupVal = null;
-          state.currentGroupKey = null;
-          return true;
-        },
-        render: () => this.renderAppLayout(),
-      },
-      {
-        path: "/artifacts/:name",
-        enter: ({ name }) => {
-          state.appMode = "artifacts";
-          state.currentArtifact = {
-            name: decodeURIComponent(name),
-            version: null,
-          };
-          state.currentRepo = null;
-          state.currentGroupVal = null;
-          state.currentGroupKey = null;
-          return true;
-        },
-        render: () => this.renderAppLayout(),
-      },
-      {
-        path: "/artifacts/:name/:version",
-        enter: ({ name, version }) => {
-          state.appMode = "artifacts";
-          state.currentArtifact = {
-            name: decodeURIComponent(name),
-            version: decodeURIComponent(version),
-          };
-          state.currentRepo = null;
-          state.currentGroupVal = null;
-          state.currentGroupKey = null;
-          return true;
-        },
-        render: () => this.renderAppLayout(),
-      },
-      {
-        path: "/settings",
-        enter: () => {
-          state.appMode = "settings";
-          return true;
-        },
-        render: () => this.renderAppLayout(),
-      },
-    ]);
   }
 
   connectedCallback() {
@@ -174,8 +58,9 @@ export class LensApp extends LitElement {
         !e.shiftKey
       ) {
         e.preventDefault();
-        const path = anchor.href.substring(window.location.origin.length);
-        this.router.goto(path);
+        const url = new URL(anchor.href);
+        window.history.pushState(null, "", url.pathname + url.search);
+        syncUrlToState();
 
         // Auto-close sidebar on mobile navigation
         if (state.isSidebarOpen) {
@@ -371,7 +256,19 @@ export class LensApp extends LitElement {
           <h1
             class="logo logo-btn"
             id="logo-btn"
-            @click=${() => this.router.goto("/")}
+            @click=${() => {
+              window.history.pushState(
+                null,
+                "",
+                createUrl({
+                  mode: "repositories",
+                  repo: null,
+                  groupKey: null,
+                  groupVal: null,
+                })
+              );
+              syncUrlToState();
+            }}
           >
             Lens.
           </h1>
@@ -380,20 +277,20 @@ export class LensApp extends LitElement {
         <div class="top-bar-right">
           <nav class="top-nav">
             <a
-              href="/repositories"
+              href="${createUrl({ mode: "repositories" })}"
               class="top-nav-btn ${isRepositories ? "active" : ""}"
             >
               Repositories
             </a>
             <a
-              href="/artifacts"
+              href="${createUrl({ mode: "artifacts" })}"
               class="top-nav-btn ${isArtifacts ? "active" : ""}"
               >Artifacts</a
             >
           </nav>
           <div class="top-bar-actions">
             <a
-              href="/settings"
+              href="${createUrl({ mode: "settings" })}"
               class="icon-btn"
               aria-label="Settings"
               title="Settings"
@@ -520,7 +417,7 @@ export class LensApp extends LitElement {
   }
 
   render() {
-    return this.router.outlet();
+    return this.renderAppLayout();
   }
 }
 
