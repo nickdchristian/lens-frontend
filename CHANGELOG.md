@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.10.0...lens-frontend-v0.11.0) (2026-07-06)
+
+
+### Features
+
+* implement Lens Summary reporting engine ([#43](https://github.com/nickdchristian/lens-frontend/issues/43)) ([3f99761](https://github.com/nickdchristian/lens-frontend/commit/3f997618df87b8fbefaa7cf4cf3efdeeb495dedf))
+
 ## [0.10.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.9.0...lens-frontend-v0.10.0) (2026-07-02)
 
 ### Features
