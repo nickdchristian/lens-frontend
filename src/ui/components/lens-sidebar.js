@@ -473,6 +473,17 @@ export class LensSidebar extends LitElement {
                 System
               </button>
             </li>
+            <li>
+              <button
+                type="button"
+                class="nav-item ${
+                  state.settingsGroup === "reports" ? "active" : ""
+                }"
+                @click=${() => (state.settingsGroup = "reports")}
+              >
+                Reports
+              </button>
+            </li>
           </ul>
         </div>
       </nav>

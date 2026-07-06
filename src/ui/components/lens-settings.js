@@ -1,6 +1,8 @@
 import { LitElement, html } from "lit";
 import { state, StoreController } from "../../state/store.js";
 import { applyTheme } from "../theme.js";
+import { generateHighLevelReportHTML } from "../../utils/report-generator.js";
+import { showToast } from "../toast.js";
 
 export class LensSettings extends LitElement {
   static get properties() {
@@ -9,6 +11,7 @@ export class LensSettings extends LitElement {
       theme: { type: String },
       apiHost: { type: String },
       timeRange: { type: String },
+      reportTimeRange: { type: String },
     };
   }
 
@@ -18,6 +21,7 @@ export class LensSettings extends LitElement {
     this.theme = localStorage.getItem("theme") || "system";
     this.apiHost = localStorage.getItem("apiHost") || "";
     this.timeRange = localStorage.getItem("defaultTimePeriod") || "month";
+    this.reportTimeRange = localStorage.getItem("reportTimePeriod") || "month";
   }
 
   get activeGroup() {
@@ -63,12 +67,44 @@ export class LensSettings extends LitElement {
     localStorage.setItem("defaultTimePeriod", this.timeRange);
     state.timePeriod = this.timeRange;
 
+    // Save report time range
+    localStorage.setItem("reportTimePeriod", this.reportTimeRange);
+
     // 4. Reload if API host changed, else go back to overview
     const currentHost = window.lensApiHost || "";
     if (currentHost !== host) {
       window.location.reload();
     } else {
       state.appMode = "repositories";
+    }
+  }
+
+  generateReport() {
+    if (!state.globalEvents || state.globalEvents.length === 0) {
+      showToast("No data available to generate report", "error");
+      return;
+    }
+
+    try {
+      const htmlString = generateHighLevelReportHTML(
+        state.globalEvents,
+        state.availableMetrics,
+        this.reportTimeRange
+      );
+
+      const reportWindow = window.open("", "_blank");
+      if (reportWindow) {
+        reportWindow.document.write(htmlString);
+        reportWindow.document.close();
+      } else {
+        showToast(
+          "Popup blocked. Please allow popups to view the report.",
+          "error"
+        );
+      }
+    } catch (e) {
+      console.error(e);
+      showToast("Failed to generate report", "error");
     }
   }
 
@@ -149,6 +185,56 @@ export class LensSettings extends LitElement {
                   <option value="month">Month</option>
                   <option value="year">Year</option>
                 </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reports Group -->
+        <div
+          class="settings-group"
+          style="${this.activeGroup === "reports" ? "" : "display: none;"}"
+        >
+          <h3>Reports & Export</h3>
+          <div class="settings-card">
+            <div class="setting-row">
+              <div class="setting-info">
+                <h4>Lens Summary Time Frame</h4>
+                <p>
+                  Select the time window for the generated Lens Summary report.
+                </p>
+              </div>
+              <div class="setting-control">
+                <select
+                  id="report-time-range-select"
+                  class="lens-input setting-input"
+                  .value=${this.reportTimeRange}
+                  @change=${(e) => (this.reportTimeRange = e.target.value)}
+                >
+                  <option value="day">Day</option>
+                  <option value="week">Week</option>
+                  <option value="month">Month</option>
+                  <option value="year">Year</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-info">
+                <h4>Lens Summary</h4>
+                <p>
+                  Generate a printable HTML Lens Summary of DORA metrics,
+                  operational activity, and system abnormalities.
+                </p>
+              </div>
+              <div class="setting-control">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  @click=${this.generateReport}
+                >
+                  Generate Report
+                </button>
               </div>
             </div>
           </div>
