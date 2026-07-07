@@ -49,7 +49,9 @@ export class LensApp extends LitElement {
 
     this._handleLinkClick = (e) => {
       const path = e.composedPath ? e.composedPath() : [];
-      const anchor = path.find(n => n?.tagName?.toUpperCase() === 'A') || e.target.closest("a");
+      const anchor =
+        path.find((n) => n?.tagName?.toUpperCase() === "A") ||
+        e.target.closest("a");
       if (
         anchor &&
         anchor.href &&

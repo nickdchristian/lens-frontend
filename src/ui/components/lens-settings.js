@@ -253,9 +253,11 @@ export class LensSettings extends LitElement {
               <div class="setting-info">
                 <h4>Logged In As</h4>
                 <p>
-                  ${state.currentUser
-                    ? state.currentUser.name || state.currentUser.user
-                    : "Not logged in"}
+                  ${
+                    state.currentUser
+                      ? state.currentUser.name || state.currentUser.user
+                      : "Not logged in"
+                  }
                 </p>
               </div>
             </div>

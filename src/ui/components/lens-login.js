@@ -17,7 +17,9 @@ export class LensLogin extends LitElement {
         background: var(--card-bg);
         padding: 4rem 3rem;
         border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-lg), 0 20px 40px rgba(0, 0, 0, 0.04);
+        box-shadow:
+          var(--shadow-lg),
+          0 20px 40px rgba(0, 0, 0, 0.04);
         text-align: center;
         max-width: 380px;
         width: 90%;
@@ -26,13 +28,17 @@ export class LensLogin extends LitElement {
         overflow: hidden;
       }
       .login-card::before {
-        content: '';
+        content: "";
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 4px;
-        background: linear-gradient(90deg, var(--theme-primary), var(--theme-accent));
+        background: linear-gradient(
+          90deg,
+          var(--theme-primary),
+          var(--theme-accent)
+        );
       }
       h1 {
         margin: 0 0 2.5rem 0;
