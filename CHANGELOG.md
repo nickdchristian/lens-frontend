@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.12.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.11.0...lens-frontend-v0.12.0) (2026-07-07)
+
+
+### Features
+
+* add github oauth dashboard login flow ([#45](https://github.com/nickdchristian/lens-frontend/issues/45)) ([6910930](https://github.com/nickdchristian/lens-frontend/commit/6910930c267fcab38ab4e542fe799c29f5059161))
+
 ## [0.11.0](https://github.com/nickdchristian/lens-frontend/compare/lens-frontend-v0.10.0...lens-frontend-v0.11.0) (2026-07-06)
 
 ### Features
