@@ -58,12 +58,4 @@ VITE_API_HOST=https://api.lens.myorg.com npm run build
    npm run format
    ```
 
-## Production Build
 
-To bundle the application for production deployment:
-
-```bash
-npm run build
-```
-
-The compiled assets will be placed in the `dist/` directory, ready to be served by any static file host (e.g., Nginx, Vercel, Cloudflare Pages).
