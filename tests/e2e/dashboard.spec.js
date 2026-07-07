@@ -51,6 +51,10 @@ test.beforeEach(async ({ page }) => {
     }
   });
 
+  await page.route("**/api/v1/auth/me", async (route) => {
+    await route.fulfill({ json: { user: "e2e", name: "E2E User" } });
+  });
+
   // Set fake apiHost in localStorage so the app doesn't try to use relative paths
   // that might hit Playwright's local server incorrectly
   await page.addInitScript(() => {

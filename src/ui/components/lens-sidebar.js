@@ -1,6 +1,5 @@
 import { LitElement, html } from "lit";
 import { state, StoreController, createUrl } from "../../state/store.js";
-import { logout } from "../../api/client.js";
 
 export class LensSidebar extends LitElement {
   createRenderRoot() {
