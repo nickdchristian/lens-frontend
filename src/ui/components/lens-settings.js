@@ -3,6 +3,7 @@ import { state, StoreController } from "../../state/store.js";
 import { applyTheme } from "../theme.js";
 import { generateHighLevelReportHTML } from "../../utils/report-generator.js";
 import { showToast } from "../toast.js";
+import { logout } from "../../api/client.js";
 
 export class LensSettings extends LitElement {
   static get properties() {
@@ -232,8 +233,49 @@ export class LensSettings extends LitElement {
                   type="button"
                   class="btn btn-secondary"
                   @click=${this.generateReport}
+                  style="width: 100%;"
                 >
                   Generate Report
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Account Group -->
+        <div
+          class="settings-group"
+          style="${this.activeGroup === "account" ? "" : "display: none;"}"
+        >
+          <h3>Account</h3>
+          <div class="settings-card">
+            <div class="setting-row">
+              <div class="setting-info">
+                <h4>Logged In As</h4>
+                <p>
+                  ${state.currentUser
+                    ? state.currentUser.name || state.currentUser.user
+                    : "Not logged in"}
+                </p>
+              </div>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-info">
+                <h4>Session</h4>
+                <p>Sign out of Lens telemetry.</p>
+              </div>
+              <div class="setting-control">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  @click=${async () => {
+                    await logout();
+                    window.location.reload();
+                  }}
+                  style="border-color: var(--danger-color, #dc2626); color: var(--danger-color, #dc2626); width: 100%;"
+                >
+                  Logout
                 </button>
               </div>
             </div>

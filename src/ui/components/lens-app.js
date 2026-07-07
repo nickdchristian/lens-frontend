@@ -10,12 +10,14 @@ import {
   fetchEvents,
   fetchRepositories,
   fetchAvailableMetrics,
+  fetchMe,
 } from "../../api/client.js";
 import { logger } from "../../utils/logger.js";
 import { showToast } from "../toast.js";
 import "./lens-sidebar.js";
 import "./lens-dashboard.js";
 import "./lens-settings.js";
+import "./lens-login.js";
 
 export class LensApp extends LitElement {
   createRenderRoot() {
@@ -46,13 +48,17 @@ export class LensApp extends LitElement {
     document.addEventListener("keydown", this._handleKeyDown);
 
     this._handleLinkClick = (e) => {
-      const anchor = e.target.closest("a");
+      const path = e.composedPath ? e.composedPath() : [];
+      const anchor = path.find(n => n?.tagName?.toUpperCase() === 'A') || e.target.closest("a");
       if (
         anchor &&
         anchor.href &&
         anchor.href.startsWith(window.location.origin) &&
         !anchor.hasAttribute("download") &&
+        !anchor.hasAttribute("data-native") &&
+        !anchor.href.includes("/api/v1/auth") &&
         anchor.target !== "_blank" &&
+        anchor.target !== "_top" &&
         !e.ctrlKey &&
         !e.metaKey &&
         !e.shiftKey
@@ -74,6 +80,27 @@ export class LensApp extends LitElement {
       this.expandedChartConfig = e.detail;
     };
     this.addEventListener("chart-enlarge", this._handleChartEnlarge);
+
+    this._handleUnauthorized = () => {
+      state.isAuthenticated = false;
+      state.currentUser = null;
+    };
+    window.addEventListener("lens:unauthorized", this._handleUnauthorized);
+
+    // Check auth on load
+    this.checkAuth();
+  }
+
+  async checkAuth() {
+    const user = await fetchMe();
+    if (user) {
+      state.isAuthenticated = true;
+      state.currentUser = user;
+      this.loadDashboardData();
+    } else {
+      state.isAuthenticated = false;
+      state.currentUser = null;
+    }
   }
 
   disconnectedCallback() {
@@ -81,6 +108,7 @@ export class LensApp extends LitElement {
     document.removeEventListener("keydown", this._handleKeyDown);
     document.removeEventListener("click", this._handleLinkClick);
     this.removeEventListener("chart-enlarge", this._handleChartEnlarge);
+    window.removeEventListener("lens:unauthorized", this._handleUnauthorized);
   }
 
   _closeChartModal() {
@@ -178,8 +206,10 @@ export class LensApp extends LitElement {
         groupKey: currentGroupKey,
         groupVal: currentGroupVal,
       };
-      // Fetch async
-      this.loadDashboardData();
+      // Fetch async only if authenticated
+      if (state.isAuthenticated) {
+        this.loadDashboardData();
+      }
     }
 
     if (changedProperties.has("expandedChartConfig")) {
@@ -224,6 +254,20 @@ export class LensApp extends LitElement {
   }
 
   renderAppLayout() {
+    if (state.isAuthenticated === null) {
+      return html`
+        <div
+          style="display:flex; justify-content:center; align-items:center; height:100vh; color: var(--text-secondary);"
+        >
+          Checking authentication...
+        </div>
+      `;
+    }
+
+    if (state.isAuthenticated === false) {
+      return html`<lens-login></lens-login>`;
+    }
+
     const isRepositories = state.appMode === "repositories";
     const isArtifacts = state.appMode === "artifacts";
 

@@ -1,5 +1,6 @@
 import { LitElement, html } from "lit";
 import { state, StoreController, createUrl } from "../../state/store.js";
+import { logout } from "../../api/client.js";
 
 export class LensSidebar extends LitElement {
   createRenderRoot() {
@@ -455,6 +456,17 @@ export class LensSidebar extends LitElement {
               <button
                 type="button"
                 class="nav-item ${
+                  state.settingsGroup === "account" ? "active" : ""
+                }"
+                @click=${() => (state.settingsGroup = "account")}
+              >
+                Account
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                class="nav-item ${
                   state.settingsGroup === "appearance" ? "active" : ""
                 }"
                 @click=${() => (state.settingsGroup = "appearance")}
@@ -466,22 +478,22 @@ export class LensSidebar extends LitElement {
               <button
                 type="button"
                 class="nav-item ${
-                  state.settingsGroup === "system" ? "active" : ""
+                  state.settingsGroup === "reports" ? "active" : ""
                 }"
-                @click=${() => (state.settingsGroup = "system")}
+                @click=${() => (state.settingsGroup = "reports")}
               >
-                System
+                Reports
               </button>
             </li>
             <li>
               <button
                 type="button"
                 class="nav-item ${
-                  state.settingsGroup === "reports" ? "active" : ""
+                  state.settingsGroup === "system" ? "active" : ""
                 }"
-                @click=${() => (state.settingsGroup = "reports")}
+                @click=${() => (state.settingsGroup = "system")}
               >
-                Reports
+                System
               </button>
             </li>
           </ul>
