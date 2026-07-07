@@ -55,6 +55,8 @@ const scheduleNotify = () => {
  * @property {string} timePeriod
  * @property {boolean} isLoading
  * @property {boolean} isSidebarOpen
+ * @property {boolean|null} isAuthenticated
+ * @property {Object|null} currentUser
  */
 
 let initialParams = null;
@@ -113,10 +115,19 @@ const initialState = {
   hasFetchedGlobalEvents: false,
   repositories: [],
   availableMetrics: [],
+  isAuthenticated: null,
+  currentUser: null,
 };
 
 export const syncStateToUrl = () => {
   if (typeof window === "undefined") return;
+  if (state.isAuthenticated === false) {
+    if (window.location.search) {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+    return;
+  }
+
   const params = new URLSearchParams();
 
   params.set("mode", state.appMode);

@@ -3,6 +3,49 @@ import { logger } from "../utils/logger.js";
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 let currentAbortController = null;
 
+export class AuthError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "AuthError";
+  }
+}
+
+async function fetchWithAuth(url, options = {}) {
+  const mergedOptions = {
+    ...options,
+    credentials: "include",
+  };
+  const response = await fetch(url, mergedOptions);
+
+  if (response.status === 401) {
+    window.dispatchEvent(new Event("lens:unauthorized"));
+    throw new AuthError("Unauthorized");
+  }
+
+  return response;
+}
+
+export async function fetchMe() {
+  try {
+    const baseUrl = getSafeBaseUrl();
+    const url = `${baseUrl}/api/v1/auth/me`;
+    const res = await fetchWithAuth(url);
+    return await res.json();
+  } catch {
+    return null; // Will be caught and handled by AuthError inside fetchWithAuth
+  }
+}
+
+export async function logout() {
+  try {
+    const baseUrl = getSafeBaseUrl();
+    const url = `${baseUrl}/api/v1/auth/logout`;
+    await fetchWithAuth(url, { method: "POST" });
+  } catch {
+    // ignore
+  }
+}
+
 function getSafeBaseUrl() {
   const apiHost =
     localStorage.getItem("apiHost") || import.meta.env.VITE_API_BASE_URL || "";
@@ -73,7 +116,7 @@ export async function fetchRepositories() {
     try {
       const baseUrl = getSafeBaseUrl();
       const url = `${baseUrl}/api/v1/events/repositories`;
-      const response = await fetch(url);
+      const response = await fetchWithAuth(url);
       if (!response.ok)
         throw new Error(`Failed to fetch: ${response.statusText}`);
       return await response.json();
@@ -103,7 +146,7 @@ export async function fetchAvailableMetrics(repository = null) {
       if (repository && repository !== "All") {
         url += `?repository=${encodeURIComponent(repository)}`;
       }
-      const response = await fetch(url);
+      const response = await fetchWithAuth(url);
       if (!response.ok)
         throw new Error(`Failed to fetch: ${response.statusText}`);
       return await response.json();
@@ -150,7 +193,7 @@ export async function fetchEvents(
           ? `${baseUrl}/api/v1/events/${encodeURIComponent(repository)}${queryParams}`
           : `${baseUrl}/api/v1/events${queryParams}`;
 
-      const response = await fetch(url, { signal });
+      const response = await fetchWithAuth(url, { signal });
 
       if (!response.ok) {
         throw new Error(`Failed to fetch: ${response.statusText}`);
@@ -197,7 +240,7 @@ export async function fetchArtifact(id) {
       const baseUrl = getSafeBaseUrl();
       const url = `${baseUrl}/api/v1/events/artifact/${encodeURIComponent(id)}`;
 
-      const res = await fetch(url);
+      const res = await fetchWithAuth(url);
 
       if (!res.ok) {
         if (res.status === 404) return null;
@@ -265,7 +308,7 @@ export async function fetchAggregatedMetrics(
           url += `&artifact_name=${encodeURIComponent(artifactName)}`;
         }
 
-        const res = await fetch(url);
+        const res = await fetchWithAuth(url);
 
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
